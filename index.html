@@ -1,405 +1,924 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telegram Bot Studio & Code Generator</title>
-  <meta name="description" content="Design, test, and export fully functional Telegram bots in Python or Node.js without writing boilerplate code.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* Custom Scrollbar & Telegram Dark Styling */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    .tg-pattern {
-      background-color: #0e1621;
-      background-image: radial-gradient(#17212b 2px, transparent 2px);
-      background-size: 16px 16px;
-    }
-    .tg-bubble-in { background-color: #182533; border-radius: 12px 12px 12px 2px; }
-    .tg-bubble-out { background-color: #2b5278; border-radius: 12px 12px 2px 12px; }
-  </style>
-</head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
-
-  <!-- Header / Navigation -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="p-2 bg-sky-500/10 border border-sky-500/20 rounded-xl text-sky-400">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-        </div>
-        <div>
-          <h1 class="font-bold text-lg text-white leading-tight">Telegram Bot Studio</h1>
-          <p class="text-xs text-slate-400">Visual Bot Builder & Deployment Generator</p>
-        </div>
-      </div>
-      <div class="flex items-center space-x-3">
-        <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Production Ready
-        </span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-    <!-- Left Column: Controls & Configuration (5 cols) -->
-    <div class="lg:col-span-5 space-y-6">
-      
-      <!-- Studio Control Panel -->
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-        <div class="border-b border-slate-800 pb-4">
-          <h2 class="text-xl font-bold text-white flex items-center gap-2">
-            <span>⚙️</span> Bot Configuration
-          </h2>
-          <p class="text-sm text-slate-400 mt-1">Configure options or write a text menu description.</p>
-        </div>
-
-        <!-- Language Framework Selection -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Target Framework</label>
-          <div class="grid grid-cols-2 gap-3">
-            <button id="btn-lang-python" onclick="setLanguage('python')" class="p-3 border rounded-xl flex flex-col items-center gap-1 border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all">
-              <span class="text-lg">🐍</span> Python (python-telegram-bot)
-            </button>
-            <button id="btn-lang-node" onclick="setLanguage('nodejs')" class="p-3 border rounded-xl flex flex-col items-center gap-1 border-slate-800 bg-slate-950 text-slate-400 font-medium text-sm transition-all hover:border-slate-700">
-              <span class="text-lg">🟢</span> Node.js (Telegraf)
-            </button>
-          </div>
-        </div>
-
-        <!-- Token Input -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Bot Token (from @BotFather)</label>
-          <input type="text" id="input-token" placeholder="123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sky-500 text-slate-200 placeholder-slate-600 transition-colors">
-        </div>
-
-        <!-- Text Menu / Prompt Interface -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Text Menu & Bot Description</label>
-          <textarea id="input-prompt" rows="4" placeholder="Describe what you need your bot to do... &#10;Example: 'A bot with /start, /help, an inline menu for Prices, Contact, and an Echo feature.'" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm focus:outline-none focus:border-sky-500 text-slate-200 placeholder-slate-600 transition-colors"></textarea>
-        </div>
-
-        <!-- Custom Commands Input -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Commands (Comma Separated)</label>
-          <input type="text" id="input-commands" value="start, help, info, ping" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-sky-500 text-slate-200 transition-colors">
-        </div>
-
-        <!-- Toggle Features -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Include Features</label>
-          <div class="space-y-2">
-            <label class="flex items-center gap-3 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
-              <input type="checkbox" id="feature-keyboard" checked class="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-slate-900 border-slate-800">
-              <div>
-                <div class="text-sm font-medium text-slate-200">Interactive Inline Keyboards</div>
-                <div class="text-xs text-slate-500">Buttons attached directly to messages</div>
-              </div>
-            </label>
-            <label class="flex items-center gap-3 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
-              <input type="checkbox" id="feature-logging" checked class="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-slate-900 border-slate-800">
-              <div>
-                <div class="text-sm font-medium text-slate-200">Logging & Diagnostics</div>
-                <div class="text-xs text-slate-500">Console activity logging for debugging</div>
-              </div>
-            </label>
-            <label class="flex items-center gap-3 p-3 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition-colors">
-              <input type="checkbox" id="feature-database" class="w-4 h-4 rounded text-sky-500 focus:ring-sky-500 bg-slate-900 border-slate-800">
-              <div>
-                <div class="text-sm font-medium text-slate-200">SQLite Database Integration</div>
-                <div class="text-xs text-slate-500">Store user IDs and persistent data</div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Generate Action Button -->
-        <button onclick="generateBotCode()" class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-sky-500/25 transition-all flex items-center justify-center gap-2">
-          <span>⚡</span> Generate Complete Bot Code
-        </button>
-      </div>
-
-    </div>
-
-    <!-- Right Column: Interactive Workspace & Output (7 cols) -->
-    <div class="lg:col-span-7 space-y-6">
-
-      <!-- Navigation Tabs -->
-      <div class="flex border-b border-slate-800 space-x-2">
-        <button id="tab-code" onclick="switchTab('code')" class="px-4 py-2.5 font-medium text-sm border-b-2 border-sky-500 text-sky-400 flex items-center gap-2 transition-all">
-          <span>💻</span> Generated Code
-        </button>
-        <button id="tab-sim" onclick="switchTab('sim')" class="px-4 py-2.5 font-medium text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition-all">
-          <span>📱</span> Live Simulator
-        </button>
-        <button id="tab-deploy" onclick="switchTab('deploy')" class="px-4 py-2.5 font-medium text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition-all">
-          <span>🚀</span> Deployment Guide
-        </button>
-      </div>
-
-      <!-- Tab 1: Code View -->
-      <div id="view-code" class="space-y-4">
-        <!-- Main Script Box -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-          <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <span class="w-3 h-3 rounded-full bg-red-500/80"></span>
-              <span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
-              <span class="w-3 h-3 rounded-full bg-green-500/80"></span>
-              <span id="file-title" class="ml-2 text-xs font-mono text-slate-400">main.py</span>
-            </div>
-            <div class="flex items-center space-x-2">
-              <button onclick="copyCurrentCode('main')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded-lg transition-colors flex items-center gap-1">
-                <span>📋</span> Copy
-              </button>
-              <button onclick="downloadCode('main')" class="px-3 py-1 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-xs font-medium text-sky-400 rounded-lg transition-colors flex items-center gap-1">
-                <span>⬇️</span> Download
-              </button>
-            </div>
-          </div>
-          <pre class="p-4 text-xs font-mono text-sky-300 overflow-x-auto max-h-[480px] leading-relaxed"><code id="code-main"># Click "Generate Complete Bot Code" on the left panel to compile your bot script!</code></pre>
-        </div>
-
-        <!-- Dependency Box -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-          <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-            <span id="dep-file-title" class="text-xs font-mono text-slate-400">requirements.txt</span>
-            <button onclick="copyCurrentCode('dep')" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded-lg transition-colors">
-              Copy Dependencies
-            </button>
-          </div>
-          <pre class="p-4 text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed"><code id="code-dep">python-telegram-bot>=20.0</code></pre>
-        </div>
-      </div>
-
-      <!-- Tab 2: Live Simulator View -->
-      <div id="view-sim" class="hidden space-y-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[560px]">
-          <!-- Simulator Header -->
-          <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center font-bold text-white text-sm">🤖</div>
-              <div>
-                <div class="text-xs font-bold text-white">Bot Simulator</div>
-                <div class="text-[10px] text-emerald-400">bot online</div>
-              </div>
-            </div>
-            <button onclick="resetSimulator()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">Clear Chat</button>
-          </div>
-
-          <!-- Chat Messages Area -->
-          <div id="sim-messages" class="flex-1 p-4 overflow-y-auto space-y-3 tg-pattern">
-            <div class="flex justify-center">
-              <span class="bg-slate-900/80 text-[10px] text-slate-400 px-3 py-1 rounded-full border border-slate-800">Simulator Initialized. Type /start to test</span>
-            </div>
-          </div>
-
-          <!-- Simulator Input Footer -->
-          <div class="p-3 bg-slate-950 border-t border-slate-800 flex gap-2">
-            <input type="text" id="sim-input" placeholder="Send a command (e.g. /start, /help)..." onkeydown="if(event.key==='Enter') sendSimMessage()" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-xs text-slate-200 focus:outline-none focus:border-sky-500">
-            <button onclick="sendSimMessage()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl font-bold text-xs transition-colors">
-              Send
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 3: Deployment Guide View -->
-      <div id="view-deploy" class="hidden space-y-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <span>🌐</span> Hosting Your Bot 24/7 For Free
-          </h3>
-
-          <div class="space-y-4 text-xs leading-relaxed text-slate-300">
-            <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-              <div class="font-bold text-sky-400 text-sm">Step 1: Push Code to GitHub</div>
-              <p>Create a new repository on GitHub and upload your generated code files (`main.py` or `bot.js`) along with `requirements.txt` or `package.json`.</p>
-            </div>
-
-            <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-              <div class="font-bold text-sky-400 text-sm">Step 2: Deploy to Render.com</div>
-              <ol class="list-decimal list-inside space-y-1 text-slate-400">
-                <li>Sign up for a free account at <a href="https://render.com" target="_blank" class="text-sky-400 underline">Render.com</a>.</li>
-                <li>Click **New +** and select **Background Worker**.</li>
-                <li>Connect your GitHub repository.</li>
-                <li>Set the **Build Command**: <code class="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">pip install -r requirements.txt</code> (or <code class="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">npm install</code>).</li>
-                <li>Set the **Start Command**: <code class="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">python main.py</code> (or <code class="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">node bot.js</code>).</li>
-                <li>Add Environment Variable: <code class="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">BOT_TOKEN</code> = your BotFather token.</li>
-              </ol>
-            </div>
-
-            <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-              <div class="font-bold text-sky-400 text-sm">Step 3: Launch!</div>
-              <p>Click **Create Background Worker**. Render will automatically build and keep your Telegram bot running online 24/7!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-    Telegram Bot Studio &copy; 2026. Built for instant GitHub & Render deployments.
-  </footer>
-
-  <!-- Pure JavaScript logic (No Babel, No External Dependencies) -->
-  <script>
-    let currentLanguage = 'python';
-
-    function setLanguage(lang) {
-      currentLanguage = lang;
-      const btnPy = document.getElementById('btn-lang-python');
-      const btnNode = document.getElementById('btn-lang-node');
-
-      if (lang === 'python') {
-        btnPy.className = "p-3 border rounded-xl flex flex-col items-center gap-1 border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all";
-        btnNode.className = "p-3 border rounded-xl flex flex-col items-center gap-1 border-slate-800 bg-slate-950 text-slate-400 font-medium text-sm transition-all hover:border-slate-700";
-      } else {
-        btnNode.className = "p-3 border rounded-xl flex flex-col items-center gap-1 border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all";
-        btnPy.className = "p-3 border rounded-xl flex flex-col items-center gap-1 border-slate-800 bg-slate-950 text-slate-400 font-medium text-sm transition-all hover:border-slate-700";
-      }
-      generateBotCode();
-    }
-
-    function switchTab(tab) {
-      ['code', 'sim', 'deploy'].forEach(t => {
-        document.getElementById('view-' + t).classList.add('hidden');
-        const tabBtn = document.getElementById('tab-' + t);
-        tabBtn.className = "px-4 py-2.5 font-medium text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 transition-all";
-      });
-
-      document.getElementById('view-' + tab).classList.remove('hidden');
-      const activeBtn = document.getElementById('tab-' + tab);
-      activeBtn.className = "px-4 py-2.5 font-medium text-sm border-b-2 border-sky-500 text-sky-400 flex items-center gap-2 transition-all";
-    }
-
-    function generateBotCode() {
-      const token = document.getElementById('input-token').value.trim() || 'YOUR_TELEGRAM_BOT_TOKEN_HERE';
-      const promptText = document.getElementById('input-prompt').value.trim();
-      const rawCmds = document.getElementById('input-commands').value.split(',').map(c => c.trim().replace(/^\//, '')).filter(c => c);
-      
-      const isKeyboard = document.getElementById('feature-keyboard').checked;
-      const isLogging = document.getElementById('feature-logging').checked;
-      const isDatabase = document.getElementById('feature-database').checked;
-
-      let mainCode = '';
-      let depCode = '';
-
-      if (currentLanguage === 'python') {
-        document.getElementById('file-title').innerText = 'main.py';
-        document.getElementById('dep-file-title').innerText = 'requirements.txt';
-        depCode = `python-telegram-bot>=20.0\n${isDatabase ? 'sqlite3\n' : ''}`;
-
-        let logBlock = isLogging ? `import logging\nlogging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)\n\n` : '';
-        let dbBlock = isDatabase ? `import sqlite3\n\ndef init_db():\n    conn = sqlite3.connect('bot_data.db')\n    cursor = conn.cursor()\n    cursor.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY)')\n    conn.commit()\n    conn.close()\n\ninit_db()\n\n` : '';
-
-        let handlers = rawCmds.map(cmd => {
-          if (cmd === 'start' && isKeyboard) {
-            return `async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):\n    keyboard = [\n        [InlineKeyboardButton("Option 1", callback_data="opt1"), InlineKeyboardButton("Option 2", callback_data="opt2")],\n        [InlineKeyboardButton("Help & Info", callback_data="help")]\n    ]\n    reply_markup = InlineKeyboardMarkup(keyboard)\n    await update.message.reply_text("Welcome! Choose an option from the menu:", reply_markup=reply_markup)`;
-          }
-          return `async def ${cmd}_command(update: Update, context: ContextTypes.DEFAULT_TYPE):\n    await update.message.reply_text("Executing command: /${cmd}")`;
-        }).join('\n\n');
-
-        let callbackBlock = isKeyboard ? `\n\nasync def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):\n    query = update.callback_query\n    await query.answer()\n    await query.edit_message_text(text=f"Selected option: {query.data}")` : '';
-
-        let registerCmds = rawCmds.map(cmd => `    app.add_handler(CommandHandler("${cmd}", ${cmd}_command))`).join('\n');
-        let registerCallback = isKeyboard ? `\n    app.add_handler(CallbackQueryHandler(button_handler))` : '';
-
-        mainCode = `${logBlock}${dbBlock}from telegram import Update${isKeyboard ? ', InlineKeyboardButton, InlineKeyboardMarkup' : ''}\nfrom telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes${isKeyboard ? ', CallbackQueryHandler' : ''}\n\nTOKEN = "${token}"\n\n${handlers}${callbackBlock}\n\nif __name__ == '__main__':\n    app = ApplicationBuilder().token(TOKEN).build()\n\n${registerCmds}${registerCallback}\n\n    print("Bot is listening for messages...")\n    app.run_polling()`;
-
-      } else {
-        document.getElementById('file-title').innerText = 'bot.js';
-        document.getElementById('dep-file-title').innerText = 'package.json';
-        depCode = `{\n  "name": "telegram-bot",\n  "version": "1.0.0",\n  "main": "bot.js",\n  "dependencies": {\n    "telegraf": "^4.12.0"\n  }\n}`;
-
-        let handlers = rawCmds.map(cmd => {
-          if (cmd === 'start' && isKeyboard) {
-            return `bot.start((ctx) => {\n  return ctx.reply('Welcome! Choose an option from the menu:', {\n    reply_markup: {\n      inline_keyboard: [\n        [{ text: 'Option 1', callback_data: 'opt1' }, { text: 'Option 2', callback_data: 'opt2' }],\n        [{ text: 'Help & Info', callback_data: 'help' }]\n      ]\n    }\n  });\n});`;
-          }
-          return `bot.command('${cmd}', (ctx) => ctx.reply('Executing command: /${cmd}'));`;
-        }).join('\n\n');
-
-        let callbackBlock = isKeyboard ? `\n\nbot.on('callback_query', (ctx) => {\n  ctx.answerCbQuery();\n  ctx.reply(\`Selected option: \${ctx.callbackQuery.data}\`);\n});` : '';
-
-        mainCode = `const { Telegraf, Markup } = require('telegraf');\n\nconst bot = new Telegraf(process.env.BOT_TOKEN || '${token}');\n\n${handlers}${callbackBlock}\n\nbot.launch().then(() => console.log('Bot is active and running!'));\n\nprocess.once('SIGINT', () => bot.stop('SIGINT'));\nprocess.once('SIGTERM', () => bot.stop('SIGTERM'));`;
-      }
-
-      document.getElementById('code-main').innerText = mainCode;
-      document.getElementById('code-dep').innerText = depCode;
-    }
-
-    function copyCurrentCode(type) {
-      const code = document.getElementById(type === 'main' ? 'code-main' : 'code-dep').innerText;
-      navigator.clipboard.writeText(code);
-      alert('Copied to clipboard!');
-    }
-
-    function downloadCode(type) {
-      const code = document.getElementById(type === 'main' ? 'code-main' : 'code-dep').innerText;
-      const filename = document.getElementById(type === 'main' ? 'file-title' : 'dep-file-title').innerText;
-      const blob = new Blob([code], { type: 'text/plain' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    }
-
-    // Simulator Logic
-    function sendSimMessage() {
-      const input = document.getElementById('sim-input');
-      const text = input.value.trim();
-      if (!text) return;
-
-      const container = document.getElementById('sim-messages');
-
-      // User Message Bubble
-      const userBubble = document.createElement('div');
-      userBubble.className = "flex justify-end";
-      userBubble.innerHTML = `<div class="tg-bubble-out text-slate-100 text-xs px-3 py-2 max-w-[80%] shadow">${escapeHtml(text)}</div>`;
-      container.appendChild(userBubble);
-
-      input.value = '';
-      container.scrollTop = container.scrollHeight;
-
-      // Bot Automated Response
-      setTimeout(() => {
-        const botBubble = document.createElement('div');
-        botBubble.className = "flex justify-start";
-
-        let responseText = `Received command: "${text}". Bot running live preview!`;
-        const cleanCmd = text.replace('/', '').toLowerCase();
-
-        if (cleanCmd === 'start') {
-          responseText = "Hello! Welcome to your generated bot preview. The bot is actively processing commands!";
-        } else if (cleanCmd === 'help') {
-          responseText = "Here is the list of available commands: /start, /help, /info, /ping.";
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Bot Studio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        code, pre { font-family: 'Fira Code', monospace; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
         }
 
-        botBubble.innerHTML = `<div class="tg-bubble-in text-slate-100 text-xs px-3 py-2 max-w-[80%] shadow border border-slate-800/50">${escapeHtml(responseText)}</div>`;
-        container.appendChild(botBubble);
-        container.scrollTop = container.scrollHeight;
-      }, 400);
-    }
+        /* Telegram background wallpaper pattern effect */
+        .tg-bg {
+            background-color: #0e1621;
+            background-image: radial-gradient(#17212b 2px, transparent 2px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden bg-slate-950 text-slate-100">
 
-    function resetSimulator() {
-      document.getElementById('sim-messages').innerHTML = `<div class="flex justify-center"><span class="bg-slate-900/80 text-[10px] text-slate-400 px-3 py-1 rounded-full border border-slate-800">Simulator Initialized. Type /start to test</span></div>`;
-    }
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur px-6 py-3.5 flex items-center justify-between shrink-0 z-20">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20">
+                <i class="fa-paper-plane fa-brands text-lg"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="font-bold text-lg text-white tracking-wide">Telegram Bot Studio</h1>
+                    <span class="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Production Ready
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400">Generate, test, & deploy production Telegram bots powered by AI</p>
+            </div>
+        </div>
 
-    function escapeHtml(string) {
-      return String(string).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
+        <div class="flex items-center space-x-3">
+            <button id="openKeyModalBtn" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
+                <i class="fa-solid fa-key text-sky-400"></i>
+                <span id="apiKeyStatusText">API Key Configured</span>
+            </button>
+            <a href="https://t.me/BotFather" target="_blank" class="text-xs flex items-center space-x-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg transition-colors">
+                <i class="fa-brands fa-telegram"></i>
+                <span>Get Token (@BotFather)</span>
+            </a>
+        </div>
+    </header>
 
-    // Initialize on load
-    window.onload = function() {
-      generateBotCode();
-    };
-  </script>
+    <!-- Main Container -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Left Panel: Studio Controls -->
+        <aside class="w-full lg:w-[420px] xl:w-[460px] border-r border-slate-800 bg-slate-900/50 flex flex-col shrink-0 overflow-y-auto">
+            <div class="p-5 space-y-5">
+                
+                <!-- Target Language -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Target Framework</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="langPython" onclick="setLanguage('python')" class="lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all">
+                            <i class="fa-brands fa-python text-lg"></i>
+                            <span>Python (v20+ async)</span>
+                        </button>
+                        <button id="langNode" onclick="setLanguage('node')" class="lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-700 font-medium text-sm transition-all">
+                            <i class="fa-brands fa-node-js text-lg"></i>
+                            <span>Node.js (Telegraf)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bot Token Input -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label for="botTokenInput" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Telegram Bot Token</label>
+                        <span class="text-[11px] text-slate-500">Stored locally</span>
+                    </div>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-500 text-xs"></i>
+                        <input type="password" id="botTokenInput" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyZ" value="1234567890:YOUR_TELEGRAM_BOT_TOKEN" class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl pl-8 pr-9 py-2 text-xs text-slate-200 font-mono outline-none transition-all">
+                        <button type="button" onclick="toggleTokenVisibility()" class="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300 text-xs">
+                            <i id="tokenEyeIcon" class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bot Architecture Description Prompt -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label for="promptInput" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Bot Architecture & Logic</label>
+                        <button onclick="loadTemplatePrompt()" class="text-[11px] text-sky-400 hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Load Contact Form Example
+                        </button>
+                    </div>
+                    <textarea id="promptInput" rows="6" placeholder="Describe what your bot should do in plain English. For example: A bot that asks for full name, email, phone number, and sends a summary email to koryunkvk@gmail.com with inline buttons to restart or contact support." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none resize-none transition-all leading-relaxed">A bot that asks for name, surname, email, phone and sends an email to koryunkvk@gmail.com. Include an inline keyboard for /start menu with buttons for 'Start Application' and 'Help'.</textarea>
+                </div>
+
+                <!-- Advanced Options -->
+                <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-3">
+                    <span class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-sliders text-sky-400"></i> Features & Modules
+                    </span>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="optEmail" checked class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
+                            <span>SMTP Email Helper</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="optLogging" checked class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
+                            <span>Verbose Logging</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="optDatabase" class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
+                            <span>SQLite Database</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="optKeyboards" checked class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
+                            <span>Inline Keyboards</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Optional Gemini API Key inline box -->
+                <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
+                    <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">Custom Gemini API Key (Optional)</label>
+                    <input type="password" id="customApiKey" placeholder="AI Studio Key (leave empty for built-in AI)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
+                    <p class="text-[10px] text-slate-500 mt-1">Generates customized production scripts directly via client-side Gemini 2.5/3.0 Flash AI.</p>
+                </div>
+
+                <!-- Generate Action Button -->
+                <button id="generateBtn" onclick="generateBotCode()" class="w-full py-3 px-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold text-sm rounded-xl shadow-lg shadow-sky-500/25 flex items-center justify-center space-x-2 transition-all cursor-pointer">
+                    <i class="fa-solid fa-bolt text-amber-300"></i>
+                    <span>Generate Complete Bot Code</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Right Panel: Code Workspace, Live Simulator & Deployment -->
+        <main class="flex-1 flex flex-col bg-slate-950 overflow-hidden">
+            
+            <!-- Workspace Navigation Tabs -->
+            <div class="border-b border-slate-800 bg-slate-900/60 px-4 flex justify-between items-center shrink-0">
+                <div class="flex space-x-1">
+                    <button id="tabCodeBtn" onclick="switchTab('code')" class="px-4 py-3 text-xs font-semibold border-b-2 border-sky-500 text-sky-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-code"></i>
+                        <span>Generated Code</span>
+                    </button>
+                    <button id="tabSimBtn" onclick="switchTab('sim')" class="px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-mobile-screen"></i>
+                        <span>Live Simulator</span>
+                    </button>
+                    <button id="tabDeployBtn" onclick="switchTab('deploy')" class="px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Deployment Guide</span>
+                    </button>
+                </div>
+
+                <div id="codeActions" class="flex items-center space-x-2">
+                    <button onclick="copyCurrentCode()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg border border-slate-700 flex items-center space-x-1.5 transition-colors">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy Main Script</span>
+                    </button>
+                    <button onclick="downloadBotFiles()" class="px-3 py-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs rounded-lg border border-sky-500/30 flex items-center space-x-1.5 transition-colors">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Download Files</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 1: Code Viewer -->
+            <div id="tabCode" class="flex-1 flex flex-col lg:flex-row overflow-hidden p-4 gap-4">
+                <!-- Main Script File -->
+                <div class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                    <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex justify-between items-center shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <i id="mainFileIcon" class="fa-brands fa-python text-sky-400"></i>
+                            <span id="mainFileName" class="text-xs font-mono font-semibold text-slate-300">main.py</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Main Application</span>
+                    </div>
+                    <div class="flex-1 overflow-auto p-4 bg-slate-900">
+                        <pre><code id="mainCodeDisplay" class="text-xs text-sky-100 font-mono leading-relaxed whitespace-pre"># Click "Generate Complete Bot Code" to generate your Telegram bot logic.</code></pre>
+                    </div>
+                </div>
+
+                <!-- Dependencies File -->
+                <div class="w-full lg:w-80 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl shrink-0">
+                    <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex justify-between items-center shrink-0">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-cubes text-amber-400"></i>
+                            <span id="depFileName" class="text-xs font-mono font-semibold text-slate-300">requirements.txt</span>
+                        </div>
+                        <button onclick="copyDepCode()" class="text-[11px] text-slate-400 hover:text-white">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="flex-1 overflow-auto p-4 bg-slate-900">
+                        <pre><code id="depCodeDisplay" class="text-xs text-slate-300 font-mono leading-relaxed whitespace-pre">python-telegram-bot>=20.0</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Live Telegram Simulator -->
+            <div id="tabSim" class="flex-1 hidden overflow-hidden p-4 justify-center items-center bg-slate-950">
+                <div class="w-full max-w-sm h-full max-h-[640px] bg-slate-900 border border-slate-800 rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+                    <!-- Phone Top Header -->
+                    <div class="bg-slate-800 px-4 py-3 border-b border-slate-700/60 flex items-center justify-between shrink-0">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <h3 id="simBotName" class="text-xs font-bold text-slate-100">Bot Simulator</h3>
+                                <p class="text-[10px] text-emerald-400 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> bot
+                                </p>
+                            </div>
+                        </div>
+                        <button onclick="clearSimulator()" title="Reset Chat" class="text-slate-400 hover:text-slate-200 text-xs">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages Log Container -->
+                    <div id="simMessages" class="flex-1 tg-bg p-3 overflow-y-auto space-y-2 text-xs">
+                        <div class="text-center my-2">
+                            <span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span>
+                        </div>
+                    </div>
+
+                    <!-- Inline Buttons Area (Dynamic) -->
+                    <div id="simInlineArea" class="px-3 py-1 bg-slate-900/90 border-t border-slate-800/60 flex flex-wrap gap-1.5 empty:hidden shrink-0"></div>
+
+                    <!-- Chat Input Field -->
+                    <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex items-center space-x-2 shrink-0">
+                        <input type="text" id="simInput" onkeydown="if(event.key==='Enter') sendSimMessage()" placeholder="Send message (e.g. /start)..." class="flex-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none">
+                        <button onclick="sendSimMessage()" class="w-8 h-8 rounded-xl bg-sky-500 hover:bg-sky-400 text-white flex items-center justify-center transition-colors shrink-0">
+                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Deployment Guide -->
+            <div id="tabDeploy" class="flex-1 hidden overflow-auto p-6 bg-slate-950 text-slate-300">
+                <div class="max-w-3xl mx-auto space-y-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-rocket text-sky-400"></i> Deploying Your Bot to Production
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-1">Follow these steps to host your generated bot online 24/7 for free using Render.com or Railway.</p>
+                    </div>
+
+                    <!-- Step 1: Token -->
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                        <h3 class="font-semibold text-sm text-sky-400 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">1</span>
+                            Set Up Telegram Bot Token
+                        </h3>
+                        <p class="text-xs text-slate-400">Open Telegram, search for <strong class="text-slate-200">@BotFather</strong>, send <code class="text-sky-300">/newbot</code>, follow instructions, and save your HTTP API Token.</p>
+                    </div>
+
+                    <!-- Step 2: Local Test -->
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                        <h3 class="font-semibold text-sm text-sky-400 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">2</span>
+                            Local Testing
+                        </h3>
+                        <div class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-300 space-y-1">
+                            <p class="text-slate-500"># Install dependencies</p>
+                            <p id="deployInstallCmd" class="text-emerald-400">pip install -r requirements.txt</p>
+                            <p class="text-slate-500 mt-2"># Run your bot</p>
+                            <p id="deployRunCmd" class="text-emerald-400">python main.py</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Render Deployment -->
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+                        <h3 class="font-semibold text-sm text-sky-400 flex items-center gap-2">
+                            <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">3</span>
+                            Deploy 24/7 on Render.com
+                        </h3>
+                        <ol class="list-decimal list-inside text-xs space-y-2 text-slate-300">
+                            <li>Push your code (<code class="text-sky-300">main.py</code> or <code class="text-sky-300">bot.js</code> + dependency file) to a GitHub repository.</li>
+                            <li>Create a free account on <a href="https://render.com" target="_blank" class="text-sky-400 underline">Render.com</a>.</li>
+                            <li>Click <strong class="text-white">New +</strong> &rarr; <strong class="text-white">Background Worker</strong>.</li>
+                            <li>Connect your GitHub repository.</li>
+                            <li>Set Environment Variables:
+                                <div class="mt-2 bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-[11px] text-sky-300">
+                                    BOT_TOKEN = 123456789:ABCdefGHI...
+                                </div>
+                            </li>
+                            <li>Click <strong class="text-white">Create Background Worker</strong>. Your bot will run continuously online!</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- API Key Configuration Modal -->
+    <div id="keyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-sky-400"></i> Gemini API Key Config
+                </h3>
+                <button onclick="closeKeyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Provide your Gemini API key to customize bot code logic using Gemini 2.5 Flash. If left blank, the studio uses intelligent template synthesis.
+            </p>
+            <div>
+                <input type="password" id="modalApiKeyInput" placeholder="AI Studio Key..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button onclick="saveModalKey()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold rounded-xl transition-colors">
+                    Save Key
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic & Gemini Integration -->
+    <script>
+        // Global State
+        let currentLanguage = 'python';
+        let generatedMainCode = '';
+        let generatedDepCode = '';
+        let simStep = 'start';
+        let simUserData = {};
+
+        // DOM Ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initDefaults();
+        });
+
+        function initDefaults() {
+            setLanguage('python');
+            generateBotCode();
+        }
+
+        // Language Switcher
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            const pyBtn = document.getElementById('langPython');
+            const nodeBtn = document.getElementById('langNode');
+            const mainFileIcon = document.getElementById('mainFileIcon');
+            const mainFileName = document.getElementById('mainFileName');
+            const depFileName = document.getElementById('depFileName');
+            const deployInstallCmd = document.getElementById('deployInstallCmd');
+            const deployRunCmd = document.getElementById('deployRunCmd');
+
+            if (lang === 'python') {
+                pyBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all";
+                nodeBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-700 font-medium text-sm transition-all";
+                mainFileIcon.className = "fa-brands fa-python text-sky-400";
+                mainFileName.textContent = "main.py";
+                depFileName.textContent = "requirements.txt";
+                deployInstallCmd.textContent = "pip install -r requirements.txt";
+                deployRunCmd.textContent = "python main.py";
+            } else {
+                nodeBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all";
+                pyBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-700 font-medium text-sm transition-all";
+                mainFileIcon.className = "fa-brands fa-node-js text-emerald-400";
+                mainFileName.textContent = "bot.js";
+                depFileName.textContent = "package.json";
+                deployInstallCmd.textContent = "npm install";
+                deployRunCmd.textContent = "node bot.js";
+            }
+        }
+
+        function toggleTokenVisibility() {
+            const input = document.getElementById('botTokenInput');
+            const icon = document.getElementById('tokenEyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function loadTemplatePrompt() {
+            document.getElementById('promptInput').value = "A bot that asks for name, surname, email, phone and sends an email to koryunkvk@gmail.com. Include inline buttons for /start menu with options 'Apply Now' and 'Support'.";
+        }
+
+        // Workspace Tab Switcher
+        function switchTab(tab) {
+            const tabs = ['code', 'sim', 'deploy'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
+                const view = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+                if (t === tab) {
+                    btn.className = "px-4 py-3 text-xs font-semibold border-b-2 border-sky-500 text-sky-400 flex items-center space-x-2";
+                    view.classList.remove('hidden');
+                    if (t === 'sim') view.classList.add('flex');
+                } else {
+                    btn.className = "px-4 py-3 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2";
+                    view.classList.add('hidden');
+                    if (t === 'sim') view.classList.remove('flex');
+                }
+            });
+            document.getElementById('codeActions').style.display = (tab === 'code') ? 'flex' : 'none';
+        }
+
+        // Main Bot Code Generation Dispatcher
+        async function generateBotCode() {
+            const btn = document.getElementById('generateBtn');
+            const userPrompt = document.getElementById('promptInput').value.trim();
+            const botToken = document.getElementById('botTokenInput').value.trim() || 'YOUR_TELEGRAM_BOT_TOKEN';
+            const apiKey = document.getElementById('customApiKey').value.trim() || document.getElementById('modalApiKeyInput').value.trim();
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-white"></i> <span>Synthesizing Code...</span>`;
+
+            try {
+                if (apiKey) {
+                    await generateWithGemini(userPrompt, botToken, apiKey);
+                } else {
+                    // Smart Fallback Synthesizer
+                    synthesizeFallbackCode(userPrompt, botToken);
+                }
+            } catch (err) {
+                console.error('API Generation Error:', err);
+                synthesizeFallbackCode(userPrompt, botToken);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i> <span>Generate Complete Bot Code</span>`;
+                updateDisplay();
+                resetSimulator();
+            }
+        }
+
+        // Gemini API Request
+        async function generateWithGemini(userPrompt, botToken, apiKey) {
+            const systemPrompt = `You are an expert Telegram Bot developer. Generate fully functional, production-ready code in the user's requested language (${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}).
+The code must strictly fulfill every requirement from the user's prompt (multi-step conversation flows, email sending with smtplib, databases, inline menus). Include proper error handling, logging, and token configuration. 
+Output your answer strictly in valid JSON format with keys "mainCode" and "depCode". Do not output markdown code blocks outside JSON.
+Example JSON output format:
+{"mainCode": "...", "depCode": "..."}`;
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [
+                    { role: 'user', parts: [{ text: `Language: ${currentLanguage}\nBot Token: ${botToken}\nUser Requirements: ${userPrompt}` }] }
+                ],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: { responseMimeType: "application/json" }
+            };
+
+            const res = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error(`Gemini API Error: ${res.status}`);
+            const data = await res.json();
+            const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            
+            if (responseText) {
+                const parsed = JSON.parse(responseText);
+                generatedMainCode = parsed.mainCode || '';
+                generatedDepCode = parsed.depCode || '';
+            } else {
+                throw new Error("Empty response from Gemini API");
+            }
+        }
+
+        // Fallback Code Synthesizer
+        function synthesizeFallbackCode(prompt, token) {
+            const includeEmail = prompt.toLowerCase().includes('email') || prompt.toLowerCase().includes('mail') || document.getElementById('optEmail').checked;
+            const targetEmail = prompt.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || 'koryunkvk@gmail.com';
+
+            if (currentLanguage === 'python') {
+                generatedDepCode = `python-telegram-bot>=20.0\npython-dotenv>=1.0.0`;
+                generatedMainCode = `import logging
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    CallbackQueryHandler,
+    ConversationHandler,
+    ContextTypes,
+    filters
+)
+
+# Enable Logging
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+# Bot Token
+BOT_TOKEN = "${token}"
+
+# Conversation States
+NAME, SURNAME, EMAIL, PHONE = range(4)
+
+${includeEmail ? `# SMTP Configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+SENDER_EMAIL = "your_email@gmail.com"
+SENDER_PASSWORD = "your_app_password"  # Google App Password
+RECIPIENT_EMAIL = "${targetEmail}"
+
+def send_notification_email(user_data):
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = SENDER_EMAIL
+        msg['To'] = RECIPIENT_EMAIL
+        msg['Subject'] = f"New Bot Application from {user_data.get('name')} {user_data.get('surname')}"
+        
+        body = f"""
+        New Form Submission:
+        --------------------
+        Name: {user_data.get('name')}
+        Surname: {user_data.get('surname')}
+        Email: {user_data.get('email')}
+        Phone: {user_data.get('phone')}
+        """
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        server.send_message(msg)
+        server.quit()
+        logger.info("Email sent successfully")
+    except Exception as e:
+        logger.error(f"Failed to send email: {e}")
+` : ''}
+
+async function start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("📝 Start Form", callback_data="start_form")],
+        [InlineKeyboardButton("ℹ️ Help", callback_data="help")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        "👋 Welcome! I am your automated assistant.\\nClick 'Start Form' to begin.",
+        reply_markup=reply_markup
+    )
+
+async function button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == "start_form":
+        await query.edit_message_text("Great! Let's start.\\nPlease enter your **First Name**:")
+        return NAME
+    elif query.data == "help":
+        await query.edit_message_text("This bot collects user details and submits them. Click /start to run again.")
+        return ConversationHandler.END
+
+async function get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['name'] = update.message.text
+    await update.message.reply_text("Thanks! Now enter your **Surname**:")
+    return SURNAME
+
+async function get_surname(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['surname'] = update.message.text
+    await update.message.reply_text("Got it. Next, enter your **Email Address**:")
+    return EMAIL
+
+async function get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['email'] = update.message.text
+    await update.message.reply_text("Perfect. Finally, enter your **Phone Number**:")
+    return PHONE
+
+async function get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.user_data['phone'] = update.message.text
+    user_data = context.user_data
+    
+    ${includeEmail ? `send_notification_email(user_data)` : ''}
+    
+    summary = (
+        "✅ **Application Complete!**\\n\\n"
+        f"**Name:** {user_data.get('name')} {user_data.get('surname')}\\n"
+        f"**Email:** {user_data.get('email')}\\n"
+        f"**Phone:** {user_data.get('phone')}\\n\\n"
+        "Your details have been recorded and emailed!"
+    )
+    await update.message.reply_text(summary, parse_mode='Markdown')
+    return ConversationHandler.END
+
+async function cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Operation cancelled. Type /start to begin again.")
+    return ConversationHandler.END
+
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    conv_handler = ConversationHandler(
+        entry_points=[
+            CommandHandler('start', start),
+            CallbackQueryHandler(button_click, pattern='^start_form$')
+        ],
+        states={
+            NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
+            SURNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_surname)],
+            EMAIL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_email)],
+            PHONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_phone)],
+        },
+        fallbacks=[CommandHandler('cancel', cancel)],
+    )
+
+    app.add_handler(conv_handler)
+    app.add_handler(CallbackQueryHandler(button_click))
+
+    print("🤖 Bot started successfully! Press Ctrl+C to stop.")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()`;
+            } else {
+                generatedDepCode = `{
+  "name": "telegram-bot",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "dependencies": {
+    "telegraf": "^4.12.0",
+    "nodemailer": "^6.9.0"
+  }
+}`;
+                generatedMainCode = `const { Telegraf, Markup, Sessions } = require('telegraf');
+const nodemailer = require('nodemailer');
+
+const BOT_TOKEN = '${token}';
+const bot = new Telegraf(BOT_TOKEN);
+
+${includeEmail ? `// Nodemailer Transport Setup
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'your_email@gmail.com',
+    pass: 'your_app_password'
+  }
+});
+
+async function sendEmail(data) {
+  const mailOptions = {
+    from: 'your_email@gmail.com',
+    to: '${targetEmail}',
+    subject: \`New Application: \${data.name} \${data.surname}\`,
+    text: \`Name: \${data.name}\\nSurname: \${data.surname}\\nEmail: \${data.email}\\nPhone: \${data.phone}\`
+  };
+  return transporter.sendMail(mailOptions);
+}` : ''}
+
+const userSessions = {};
+
+bot.start((ctx) => {
+  ctx.reply('👋 Welcome to Telegram Bot Studio! Click below to start:', Markup.inlineKeyboard([
+    [Markup.button.callback('📝 Start Form', 'START_FORM')],
+    [Markup.button.callback('ℹ️ Help', 'HELP')]
+  ]));
+});
+
+bot.action('START_FORM', (ctx) => {
+  userSessions[ctx.from.id] = { step: 'NAME' };
+  ctx.reply('Please enter your First Name:');
+});
+
+bot.action('HELP', (ctx) => {
+  ctx.reply('This bot collects your information step by step. Use /start to begin.');
+});
+
+bot.on('text', async (ctx) => {
+  const userId = ctx.from.id;
+  const session = userSessions[userId];
+  if (!session) return ctx.reply('Send /start to begin.');
+
+  switch (session.step) {
+    case 'NAME':
+      session.name = ctx.message.text;
+      session.step = 'SURNAME';
+      ctx.reply('Great! Now enter your Surname:');
+      break;
+    case 'SURNAME':
+      session.surname = ctx.message.text;
+      session.step = 'EMAIL';
+      ctx.reply('Got it! Now enter your Email Address:');
+      break;
+    case 'EMAIL':
+      session.email = ctx.message.text;
+      session.step = 'PHONE';
+      ctx.reply('Thanks! Lastly, enter your Phone Number:');
+      break;
+    case 'PHONE':
+      session.phone = ctx.message.text;
+      ${includeEmail ? `await sendEmail(session);` : ''}
+      ctx.reply(\`✅ Form Complete!\\n\\nName: \${session.name} \${session.surname}\\nEmail: \${session.email}\\nPhone: \${session.phone}\`);
+      delete userSessions[userId];
+      break;
+  }
+});
+
+bot.launch().then(() => console.log('🤖 Node.js Telegraf bot is running!'));
+`;
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('mainCodeDisplay').textContent = generatedMainCode;
+            document.getElementById('depCodeDisplay').textContent = generatedDepCode;
+        }
+
+        // Copy & Download Functions
+        function copyCurrentCode() {
+            navigator.clipboard.writeText(generatedMainCode);
+            alert("Main bot script copied to clipboard!");
+        }
+
+        function copyDepCode() {
+            navigator.clipboard.writeText(generatedDepCode);
+            alert("Dependencies copied to clipboard!");
+        }
+
+        function downloadBotFiles() {
+            const mainExt = currentLanguage === 'python' ? 'main.py' : 'bot.js';
+            const depExt = currentLanguage === 'python' ? 'requirements.txt' : 'package.json';
+
+            downloadBlob(generatedMainCode, mainExt, 'text/plain');
+            setTimeout(() => downloadBlob(generatedDepCode, depExt, 'text/plain'), 200);
+        }
+
+        function downloadBlob(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Live Interactive Telegram Simulator Logic
+        function clearSimulator() {
+            const box = document.getElementById('simMessages');
+            box.innerHTML = `<div class="text-center my-2"><span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span></div>`;
+            document.getElementById('simInlineArea').innerHTML = '';
+            simStep = 'start';
+            simUserData = {};
+        }
+
+        function resetSimulator() {
+            clearSimulator();
+            addBotSimMessage("Bot logic updated! Send /start to test live interactions.");
+        }
+
+        function sendSimMessage() {
+            const input = document.getElementById('simInput');
+            const txt = input.value.trim();
+            if (!txt) return;
+
+            addUserSimMessage(txt);
+            input.value = '';
+
+            setTimeout(() => processSimLogic(txt), 400);
+        }
+
+        function processSimLogic(text) {
+            if (text === '/start') {
+                simStep = 'start';
+                simUserData = {};
+                addBotSimMessage("👋 Welcome! Click below to start the form:", [
+                    { text: "📝 Start Form", action: "start_form" },
+                    { text: "ℹ️ Help", action: "help" }
+                ]);
+                return;
+            }
+
+            switch (simStep) {
+                case 'name':
+                    simUserData.name = text;
+                    simStep = 'surname';
+                    addBotSimMessage("Thanks! Now enter your **Surname**:");
+                    break;
+                case 'surname':
+                    simUserData.surname = text;
+                    simStep = 'email';
+                    addBotSimMessage("Got it! Next, enter your **Email Address**:");
+                    break;
+                case 'email':
+                    simUserData.email = text;
+                    simStep = 'phone';
+                    addBotSimMessage("Perfect! Finally, enter your **Phone Number**:");
+                    break;
+                case 'phone':
+                    simUserData.phone = text;
+                    simStep = 'done';
+                    addBotSimMessage(`✅ **Application Completed!**\n\n• **Name:** ${simUserData.name} ${simUserData.surname}\n• **Email:** ${simUserData.email}\n• **Phone:** ${simUserData.phone}\n\n*Notification sent to recipient!*`);
+                    break;
+                default:
+                    addBotSimMessage("Type /start to start the interactive form.");
+            }
+        }
+
+        function handleSimInlineClick(action) {
+            if (action === 'start_form') {
+                addUserSimMessage("📝 Start Form");
+                simStep = 'name';
+                setTimeout(() => addBotSimMessage("Please enter your **First Name**:"), 300);
+            } else if (action === 'help') {
+                addUserSimMessage("ℹ️ Help");
+                setTimeout(() => addBotSimMessage("This bot guides users through multi-step form submissions."), 300);
+            }
+            document.getElementById('simInlineArea').innerHTML = '';
+        }
+
+        function addUserSimMessage(txt) {
+            const box = document.getElementById('simMessages');
+            box.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-sky-600 text-white rounded-2xl rounded-tr-none px-3 py-2 max-w-[80%] shadow">
+                        ${escapeHtml(txt)}
+                    </div>
+                </div>
+            `;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addBotSimMessage(txt, buttons = []) {
+            const box = document.getElementById('simMessages');
+            box.innerHTML += `
+                <div class="flex justify-start">
+                    <div class="bg-slate-800 text-slate-100 rounded-2xl rounded-tl-none px-3 py-2 max-w-[80%] shadow border border-slate-700/50">
+                        ${txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+
+            const btnArea = document.getElementById('simInlineArea');
+            btnArea.innerHTML = '';
+            if (buttons && buttons.length > 0) {
+                buttons.forEach(b => {
+                    const btn = document.createElement('button');
+                    btn.className = "px-3 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-xs rounded-xl border border-sky-500/30 transition-colors";
+                    btn.textContent = b.text;
+                    btn.onclick = () => handleSimInlineClick(b.action);
+                    btnArea.appendChild(btn);
+                });
+            }
+
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Modal Controls
+        function closeKeyModal() {
+            document.getElementById('keyModal').classList.add('hidden');
+        }
+
+        document.getElementById('openKeyModalBtn').onclick = () => {
+            document.getElementById('keyModal').classList.remove('hidden');
+        };
+
+        function saveModalKey() {
+            const key = document.getElementById('modalApiKeyInput').value.trim();
+            if (key) {
+                document.getElementById('apiKeyStatusText').textContent = "Custom Key Saved";
+            }
+            closeKeyModal();
+        }
+    </script>
 </body>
 </html>
