@@ -34,7 +34,6 @@
         body { font-family: 'Inter', sans-serif; }
         code, pre { font-family: 'Fira Code', monospace; }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -50,7 +49,6 @@
             background: #475569;
         }
 
-        /* Telegram background wallpaper pattern effect */
         .tg-bg {
             background-color: #0e1621;
             background-image: radial-gradient(#17212b 2px, transparent 2px);
@@ -144,30 +142,30 @@
                         <i class="fa-solid fa-sliders text-sky-400"></i> Features & Modules
                     </span>
                     <div class="grid grid-cols-2 gap-2 text-xs">
-                        <label title="Includes pre-configured SMTP email sending functions to dispatch contact forms directly to your inbox." class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
                             <input type="checkbox" id="optEmail" checked class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
                             <span>SMTP Email Helper</span>
                         </label>
-                        <label title="Adds detailed console logging to track bot events, user messages, and debug runtime errors in real time." class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
                             <input type="checkbox" id="optLogging" checked class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
                             <span>Verbose Logging</span>
                         </label>
-                        <label title="Generates lightweight SQLite code handlers to store, save, and retrieve user data locally." class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
                             <input type="checkbox" id="optDatabase" class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
                             <span>SQLite Database</span>
                         </label>
-                        <label title="Includes boilerplate structures for interactive Telegram inline menu buttons and callback query handlers." class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
+                        <label class="flex items-center space-x-2 text-slate-300 cursor-pointer select-none">
                             <input type="checkbox" id="optKeyboards" checked class="rounded border-slate-700 bg-slate-900 text-sky-500 focus:ring-sky-500/20">
                             <span>Inline Keyboards</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Optional Gemini/Groq API Key inline box -->
+                <!-- Optional Custom Key Override -->
                 <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
                     <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">Custom API Key (Optional)</label>
                     <input type="password" id="customApiKey" placeholder="API Key (leave empty for built-in generator)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
-                    <p class="text-[10px] text-slate-500 mt-1">Uses built-in default Gemini key if left blank.</p>
+                    <p class="text-[10px] text-slate-500 mt-1">Uses built-in default key if left blank.</p>
                 </div>
 
                 <!-- Generate Action Button -->
@@ -178,10 +176,9 @@
             </div>
         </aside>
 
-        <!-- Right Panel: Code Workspace, Live Simulator & Deployment -->
+        <!-- Right Panel: Workspace -->
         <main class="flex-1 flex flex-col bg-slate-950 overflow-hidden">
             
-            <!-- Workspace Navigation Tabs -->
             <div class="border-b border-slate-800 bg-slate-900/60 px-4 flex justify-between items-center shrink-0">
                 <div class="flex space-x-1">
                     <button id="tabCodeBtn" onclick="switchTab('code')" class="px-4 py-3 text-xs font-semibold border-b-2 border-sky-500 text-sky-400 flex items-center space-x-2">
@@ -212,7 +209,6 @@
 
             <!-- TAB 1: Code Viewer -->
             <div id="tabCode" class="flex-1 flex flex-col lg:flex-row overflow-hidden p-4 gap-4">
-                <!-- Main Script File -->
                 <div class="flex-1 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
                     <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex justify-between items-center shrink-0">
                         <div class="flex items-center space-x-2">
@@ -226,7 +222,6 @@
                     </div>
                 </div>
 
-                <!-- Dependencies File -->
                 <div class="w-full lg:w-80 flex flex-col bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl shrink-0">
                     <div class="bg-slate-950 px-4 py-2.5 border-b border-slate-800 flex justify-between items-center shrink-0">
                         <div class="flex items-center space-x-2">
@@ -243,10 +238,9 @@
                 </div>
             </div>
 
-            <!-- TAB 2: Live Telegram Simulator -->
+            <!-- TAB 2: Live Simulator -->
             <div id="tabSim" class="flex-1 hidden overflow-hidden p-4 justify-center items-center bg-slate-950">
                 <div class="w-full max-w-sm h-full max-h-[640px] bg-slate-900 border border-slate-800 rounded-3xl flex flex-col overflow-hidden shadow-2xl">
-                    <!-- Phone Top Header -->
                     <div class="bg-slate-800 px-4 py-3 border-b border-slate-700/60 flex items-center justify-between shrink-0">
                         <div class="flex items-center space-x-3">
                             <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
@@ -264,17 +258,14 @@
                         </button>
                     </div>
 
-                    <!-- Chat Messages Log Container -->
                     <div id="simMessages" class="flex-1 tg-bg p-3 overflow-y-auto space-y-2 text-xs">
                         <div class="text-center my-2">
                             <span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span>
                         </div>
                     </div>
 
-                    <!-- Inline Buttons Area (Dynamic) -->
                     <div id="simInlineArea" class="px-3 py-1 bg-slate-900/90 border-t border-slate-800/60 flex flex-wrap gap-1.5 empty:hidden shrink-0"></div>
 
-                    <!-- Chat Input Field -->
                     <div class="p-2.5 bg-slate-900 border-t border-slate-800 flex items-center space-x-2 shrink-0">
                         <input type="text" id="simInput" onkeydown="if(event.key==='Enter') sendSimMessage()" placeholder="Send message (e.g. /start)..." class="flex-1 bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none">
                         <button onclick="sendSimMessage()" class="w-8 h-8 rounded-xl bg-sky-500 hover:bg-sky-400 text-white flex items-center justify-center transition-colors shrink-0">
@@ -294,7 +285,6 @@
                         <p class="text-xs text-slate-400 mt-1">Follow these steps to host your generated Telegram bot online 24/7.</p>
                     </div>
 
-                    <!-- Step 1: Token -->
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
                         <h3 class="font-semibold text-sm text-sky-400 flex items-center gap-2">
                             <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">1</span>
@@ -303,7 +293,6 @@
                         <p class="text-xs text-slate-400">Open Telegram, search for <strong class="text-slate-200">@BotFather</strong>, send <code class="text-sky-300">/newbot</code>, follow instructions, and save your HTTP API Token.</p>
                     </div>
 
-                    <!-- Step 2: Local Testing -->
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
                         <h3 class="font-semibold text-sm text-sky-400 flex items-center gap-2">
                             <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">2</span>
@@ -317,7 +306,6 @@
                         </div>
                     </div>
 
-                    <!-- Step 3: Option A - PythonAnywhere (100% Free 24/7) -->
                     <div class="p-4 bg-slate-900 border border-emerald-500/30 rounded-xl space-y-3">
                         <div class="flex items-center justify-between">
                             <h3 class="font-semibold text-sm text-emerald-400 flex items-center gap-2">
@@ -329,28 +317,11 @@
                         <ol class="list-decimal list-inside text-xs space-y-2 text-slate-300">
                             <li>Create a free account on <a href="https://www.pythonanywhere.com" target="_blank" class="text-sky-400 underline">PythonAnywhere.com</a>.</li>
                             <li>Go to the <strong class="text-white">Files</strong> tab and upload your <code class="text-sky-300">main.py</code> script.</li>
-                            <li>In your code, set <code class="text-sky-300">SENDER_PASSWORD</code> using a 16-character <strong class="text-white">Google App Password</strong> (generated via Google Account Security &gt; App Passwords).</li>
                             <li>Open a <strong class="text-white">Bash Console</strong> from your dashboard and install the library:
                                 <div class="mt-1 bg-slate-950 p-2 rounded border border-slate-800 font-mono text-[11px] text-emerald-400">pip install python-telegram-bot</div>
                             </li>
                             <li>To keep it running 24/7: Go to the <strong class="text-white">Tasks</strong> tab, create an <strong class="text-white">Always-on task</strong> with:
                                 <div class="mt-1 bg-slate-950 p-2 rounded border border-slate-800 font-mono text-[11px] text-emerald-400">python3 main.py</div>
-                            </li>
-                        </ol>
-                    </div>
-
-                    <!-- Step 3: Option B - Render.com -->
-                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
-                        <h3 class="font-semibold text-sm text-sky-400 flex items-center gap-2">
-                            <span class="w-5 h-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">3B</span>
-                            Deploy on Render.com
-                        </h3>
-                        <ol class="list-decimal list-inside text-xs space-y-2 text-slate-300">
-                            <li>Push your code (<code class="text-sky-300">main.py</code> or <code class="text-sky-300">bot.js</code> + dependency file) to a GitHub repository.</li>
-                            <li>Create an account on <a href="https://render.com" target="_blank" class="text-sky-400 underline">Render.com</a>.</li>
-                            <li>Click <strong class="text-white">New +</strong> &rarr; <strong class="text-white">Background Worker</strong> (Note: Telegram bots require a paid or worker instance to run continuous polling).</li>
-                            <li>Connect your GitHub repository and set Environment Variable:
-                                <div class="mt-2 bg-slate-950 p-2.5 rounded border border-slate-800 font-mono text-[11px] text-sky-300">BOT_TOKEN = 123456789:ABCdefGHI...</div>
                             </li>
                         </ol>
                     </div>
@@ -360,7 +331,7 @@
         </main>
     </div>
 
-    <!-- API Key Configuration Modal -->
+    <!-- Modal -->
     <div id="keyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center">
@@ -370,7 +341,7 @@
                 <button onclick="closeKeyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-                Provide your custom API key (Gemini or Groq) to customize bot code logic. If left blank, the studio uses the built-in fallback key.
+                Provide your custom Gemini API key.
             </p>
             <div>
                 <input type="password" id="modalApiKeyInput" placeholder="API Key..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
@@ -383,31 +354,25 @@
         </div>
     </div>
 
-    <!-- Application Logic -->
     <script>
-        // Global State
         let currentLanguage = 'python';
         let generatedMainCode = '';
         let generatedDepCode = '';
         let simStep = 'start';
-        let simUserData = {};
 
-        // Default Fallback Gemini Key
-        const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6I1h7TKA1tjsFLAuUDFdOyzobfs2BKG9i-7tS4qyYMlxA";
+        // Your exact key string as shown in AI Studio
+        const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6ls6TwnGhsHlx6ZciePwhkvjkvRDJEzGiY7dzEgFmrelg";
 
-        // DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
             initDefaults();
         });
 
         function initDefaults() {
             setLanguage('python');
-            // Empty code displays on page load until user generates
             document.getElementById('mainCodeDisplay').textContent = '# Click "Generate Complete Bot Code" to construct your custom bot script.';
             document.getElementById('depCodeDisplay').textContent = '# Dependencies will appear here...';
         }
 
-        // Language Switcher
         function setLanguage(lang) {
             currentLanguage = lang;
             const pyBtn = document.getElementById('langPython');
@@ -415,8 +380,6 @@
             const mainFileIcon = document.getElementById('mainFileIcon');
             const mainFileName = document.getElementById('mainFileName');
             const depFileName = document.getElementById('depFileName');
-            const deployInstallCmd = document.getElementById('deployInstallCmd');
-            const deployRunCmd = document.getElementById('deployRunCmd');
 
             if (lang === 'python') {
                 pyBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all";
@@ -424,16 +387,12 @@
                 mainFileIcon.className = "fa-brands fa-python text-sky-400";
                 mainFileName.textContent = "main.py";
                 depFileName.textContent = "requirements.txt";
-                deployInstallCmd.textContent = "pip install -r requirements.txt";
-                deployRunCmd.textContent = "python main.py";
             } else {
                 nodeBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-sky-500 bg-sky-500/10 text-sky-400 font-medium text-sm transition-all";
                 pyBtn.className = "lang-btn flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-700 font-medium text-sm transition-all";
                 mainFileIcon.className = "fa-brands fa-node-js text-emerald-400";
                 mainFileName.textContent = "bot.js";
                 depFileName.textContent = "package.json";
-                deployInstallCmd.textContent = "npm install";
-                deployRunCmd.textContent = "node bot.js";
             }
         }
 
@@ -450,12 +409,11 @@
         }
 
         function loadTemplatePrompt() {
-            document.getElementById('promptInput').value = `A bot that upon receiving /start asks the user to rate their experience from 1 to 5 stars using inline buttons. If they rate 1-3 stars, it asks for detailed feedback on what went wrong. If they rate 4-5 stars, it asks for a testimonial. Finally, it sends a summary of the rating and feedback to the admin and saves it with a thank you message.`;
+            document.getElementById('promptInput').value = `A bot that upon receiving /start asks the user to rate their experience from 1 to 5 stars using inline buttons. If they rate 1-3 stars, it asks for detailed feedback. If they rate 4-5 stars, it asks for a testimonial. Finally, it sends a summary to the admin.`;
         }
 
         function switchTab(tab) {
-            const tabs = ['code', 'sim', 'deploy'];
-            tabs.forEach(t => {
+            ['code', 'sim', 'deploy'].forEach(t => {
                 const btn = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
                 const view = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
                 if (t === tab) {
@@ -471,20 +429,10 @@
             document.getElementById('codeActions').style.display = (tab === 'code') ? 'flex' : 'none';
         }
 
-        function sanitizePythonCode(code) {
-            if (currentLanguage === 'python') {
-                code = code.replace(/async\s+function\s+/g, 'async def ');
-                code = code.replace(/^function\s+/gm, 'def ');
-            }
-            return code;
-        }
-
         async function generateBotCode() {
             const btn = document.getElementById('generateBtn');
             const userPrompt = document.getElementById('promptInput').value.trim();
             const botToken = document.getElementById('botTokenInput').value.trim() || 'YOUR_TELEGRAM_BOT_TOKEN';
-    
-            // Use user input if provided, otherwise fallback to your default Gemini key
             const inputKey = document.getElementById('customApiKey')?.value.trim() || document.getElementById('modalApiKeyInput')?.value.trim();
             const activeApiKey = inputKey || DEFAULT_GEMINI_KEY;
 
@@ -497,24 +445,23 @@
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-white"></i> <span>Synthesizing Code...</span>`;
 
             try {
-                // Send request directly to Gemini API
                 await generateWithGemini(userPrompt, botToken, activeApiKey);
             } catch (err) {
                 console.error('API Generation Error:', err);
-                alert('Failed to synthesize code. Please check your API key or connection.');
+                alert('Failed to synthesize code: ' + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i> <span>Generate Complete Bot Code</span>`;
-        
-                generatedMainCode = sanitizePythonCode(generatedMainCode);
                 updateDisplay();
-                resetSimulator();
             }
         }
 
         async function generateWithGemini(userPrompt, botToken, apiKey) {
-            const systemPrompt = `You are an expert Telegram Bot developer. Generate 100% syntactically correct, production-ready code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}. Output strictly in valid JSON with keys "mainCode" and "depCode".`;
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const systemPrompt = `You are an expert Telegram Bot developer. Generate syntactically correct code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+' : 'Node.js using Telegraf'}. Return strictly JSON with keys "mainCode" and "depCode".`;
+            
+            // Using corsproxy.io to bypass browser CORS origin blocks on GitHub Pages
+            const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const apiUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
 
             const payload = {
                 contents: [
@@ -530,10 +477,11 @@
                 body: JSON.stringify(payload)
             });
 
-            if (!res.ok) throw new Error(`Gemini API Error: ${res.status}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
             
             const data = await res.json();
-            const jsonRes = JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text);
+            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const jsonRes = JSON.parse(rawText);
 
             generatedMainCode = jsonRes.mainCode;
             generatedDepCode = jsonRes.depCode;
@@ -546,12 +494,12 @@
 
         function copyCurrentCode() {
             navigator.clipboard.writeText(generatedMainCode);
-            alert("Main script code copied to clipboard!");
+            alert("Main script copied!");
         }
 
         function copyDepCode() {
             navigator.clipboard.writeText(generatedDepCode);
-            alert("Dependencies copied to clipboard!");
+            alert("Dependencies copied!");
         }
 
         function downloadBotFiles() {
@@ -572,71 +520,32 @@
             URL.revokeObjectURL(url);
         }
 
-        // Simulator Logic
         function clearSimulator() {
-            const messages = document.getElementById('simMessages');
-            messages.innerHTML = `
-                <div class="text-center my-2">
-                    <span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span>
-                </div>
-            `;
-            simStep = 'start';
-            simUserData = {};
-        }
-
-        function resetSimulator() {
-            clearSimulator();
+            document.getElementById('simMessages').innerHTML = `<div class="text-center my-2"><span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span></div>`;
         }
 
         function sendSimMessage() {
             const input = document.getElementById('simInput');
             const text = input.value.trim();
             if (!text) return;
-
             addSimBubble(text, 'user');
             input.value = '';
-
-            setTimeout(() => processSimResponse(text), 400);
+            setTimeout(() => addSimBubble("Bot received: " + text, 'bot'), 400);
         }
 
         function addSimBubble(text, sender) {
             const messages = document.getElementById('simMessages');
             const wrap = document.createElement('div');
-            
-            if (sender === 'user') {
-                wrap.className = 'flex justify-end my-1';
-                wrap.innerHTML = `<div class="bg-sky-600 text-white px-3 py-1.5 rounded-2xl rounded-tr-xs max-w-[80%] break-words">${escapeHtml(text)}</div>`;
-            } else {
-                wrap.className = 'flex justify-start my-1';
-                wrap.innerHTML = `<div class="bg-slate-800 text-slate-100 px-3 py-1.5 rounded-2xl rounded-tl-xs max-w-[80%] border border-slate-700/60 whitespace-pre-wrap break-words">${escapeHtml(text)}</div>`;
-            }
-            
+            wrap.className = sender === 'user' ? 'flex justify-end my-1' : 'flex justify-start my-1';
+            wrap.innerHTML = `<div class="${sender === 'user' ? 'bg-sky-600 text-white' : 'bg-slate-800 text-slate-100 border border-slate-700/60'} px-3 py-1.5 rounded-2xl max-w-[80%] break-words">${escapeHtml(text)}</div>`;
             messages.appendChild(wrap);
             messages.scrollTop = messages.scrollHeight;
         }
 
-        function processSimResponse(input) {
-            if (input === '/start') {
-                simStep = 'active';
-                addSimBubble("👋 Bot started! Enter commands or details specified in your logic.", 'bot');
-                return;
-            }
-
-            addSimBubble("Bot received: " + input, 'bot');
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        // Modal Controls
+        function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
         function openKeyModal() { document.getElementById('keyModal').classList.remove('hidden'); }
         function closeKeyModal() { document.getElementById('keyModal').classList.add('hidden'); }
-        function saveModalKey() {
-            const val = document.getElementById('modalApiKeyInput').value.trim();
-            document.getElementById('apiKeyStatusText').textContent = val ? "Key Set" : "API Key Configured";
-            closeKeyModal();
-        }
+        function saveModalKey() { closeKeyModal(); }
     </script>
 </body>
 </html>
