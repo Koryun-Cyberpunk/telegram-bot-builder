@@ -458,10 +458,9 @@
 
         async function generateWithGemini(userPrompt, botToken, apiKey) {
             const systemPrompt = `You are an expert Telegram Bot developer. Generate syntactically correct code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+' : 'Node.js using Telegraf'}. Return strictly JSON with keys "mainCode" and "depCode".`;
-            
-            // Using corsproxy.io to bypass browser CORS origin blocks on GitHub Pages
-            const targetUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            const apiUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+    
+            // Direct endpoint call - no third-party CORS proxy needed for standard fetch POST requests to Gemini API
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
 
             const payload = {
                 contents: [
@@ -473,12 +472,17 @@
 
             const res = await fetch(apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify(payload)
             });
 
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error?.message || `HTTP ${res.status}`);
+            }
+    
             const data = await res.json();
             const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
             const jsonRes = JSON.parse(rawText);
