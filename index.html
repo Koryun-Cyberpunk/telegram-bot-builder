@@ -79,7 +79,7 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <button id="openKeyModalBtn" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
+            <button id="openKeyModalBtn" onclick="openKeyModal()" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
                 <i class="fa-solid fa-key text-sky-400"></i>
                 <span id="apiKeyStatusText">API Key Configured</span>
             </button>
@@ -135,7 +135,11 @@
                             <i class="fa-solid fa-wand-magic-sparkles"></i> Load Contact Form Example
                         </button>
                     </div>
-                    <textarea id="promptInput" rows="6" placeholder="Describe what your bot should do in plain English. For example: A bot that asks for full name, email, phone number, and sends a summary email to koryunkvk@gmail.com with inline buttons to restart or contact support." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none resize-none transition-all leading-relaxed">A bot that asks for name, surname, email, phone and sends an email to koryunkvk@gmail.com. Include an inline keyboard for /start menu with buttons for 'Start Application' and 'Help'.</textarea>
+                    <textarea id="promptInput" rows="6" placeholder="Describe what your bot should do in plain English." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none resize-none transition-all leading-relaxed">A bot that after receiving "/start" it asks about contacts such as email, name/surname, phone number and then sends them exactly on "koryunkvk@gmail.com" email in this format:
+"Name - ...
+Surname - ...
+Email - ...
+Number - ..." where dots are the information</textarea>
                 </div>
 
                 <!-- Advanced Options -->
@@ -166,8 +170,8 @@
                 <!-- Optional Gemini API Key inline box -->
                 <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
                     <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">Custom Gemini API Key (Optional)</label>
-                    <input type="password" id="customApiKey" placeholder="AI Studio Key (leave empty for built-in AI)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
-                    <p class="text-[10px] text-slate-500 mt-1">Generates customized production scripts directly via client-side Gemini 2.5/3.0 Flash AI.</p>
+                    <input type="password" id="customApiKey" placeholder="AI Studio Key (leave empty for built-in generator)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
+                    <p class="text-[10px] text-slate-500 mt-1">Generates customized production scripts directly via client-side Gemini Flash AI.</p>
                 </div>
 
                 <!-- Generate Action Button -->
@@ -238,7 +242,8 @@
                         </button>
                     </div>
                     <div class="flex-1 overflow-auto p-4 bg-slate-900">
-                        <pre><code id="depCodeDisplay" class="text-xs text-slate-300 font-mono leading-relaxed whitespace-pre">python-telegram-bot>=20.0</code></pre>
+                        <pre><code id="depCodeDisplay" class="text-xs text-slate-300 font-mono leading-relaxed whitespace-pre">python-telegram-bot>=20.0
+python-dotenv>=1.0.0</code></pre>
                     </div>
                 </div>
             </div>
@@ -352,7 +357,7 @@
                 <button onclick="closeKeyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-                Provide your Gemini API key to customize bot code logic using Gemini 2.5 Flash. If left blank, the studio uses intelligent template synthesis.
+                Provide your Gemini API key to customize bot code logic using Gemini 2.5/3.0 Flash. If left blank, the studio uses a built-in generator.
             </p>
             <div>
                 <input type="password" id="modalApiKeyInput" placeholder="AI Studio Key..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
@@ -427,10 +432,13 @@
         }
 
         function loadTemplatePrompt() {
-            document.getElementById('promptInput').value = "A bot that asks for name, surname, email, phone and sends an email to koryunkvk@gmail.com. Include inline buttons for /start menu with options 'Apply Now' and 'Support'.";
+            document.getElementById('promptInput').value = `A bot that after receiving "/start" it asks about contacts such as email, name/surname, phone number and then sends them exactly on "koryunkvk@gmail.com" email in this format:
+"Name - ...
+Surname - ...
+Email - ...
+Number - ..." where dots are the information`;
         }
 
-        // Workspace Tab Switcher
         function switchTab(tab) {
             const tabs = ['code', 'sim', 'deploy'];
             tabs.forEach(t => {
@@ -449,7 +457,16 @@
             document.getElementById('codeActions').style.display = (tab === 'code') ? 'flex' : 'none';
         }
 
-        // Main Bot Code Generation Dispatcher
+        function sanitizePythonCode(code) {
+            if (currentLanguage === 'python') {
+                // Fix invalid async function keywords
+                code = code.replace(/async\s+function\s+/g, 'async def ');
+                // Fix generic function declarations
+                code = code.replace(/^function\s+/gm, 'def ');
+            }
+            return code;
+        }
+
         async function generateBotCode() {
             const btn = document.getElementById('generateBtn');
             const userPrompt = document.getElementById('promptInput').value.trim();
@@ -463,7 +480,6 @@
                 if (apiKey) {
                     await generateWithGemini(userPrompt, botToken, apiKey);
                 } else {
-                    // Smart Fallback Synthesizer
                     synthesizeFallbackCode(userPrompt, botToken);
                 }
             } catch (err) {
@@ -472,24 +488,34 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i> <span>Generate Complete Bot Code</span>`;
+                
+                // Sanitize before display
+                generatedMainCode = sanitizePythonCode(generatedMainCode);
                 updateDisplay();
                 resetSimulator();
             }
         }
 
-        // Gemini API Request
         async function generateWithGemini(userPrompt, botToken, apiKey) {
-            const systemPrompt = `You are an expert Telegram Bot developer. Generate fully functional, production-ready code in the user's requested language (${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}).
-The code must strictly fulfill every requirement from the user's prompt (multi-step conversation flows, email sending with smtplib, databases, inline menus). Include proper error handling, logging, and token configuration. 
-Output your answer strictly in valid JSON format with keys "mainCode" and "depCode". Do not output markdown code blocks outside JSON.
-Example JSON output format:
-{"mainCode": "...", "depCode": "..."}`;
+            const systemPrompt = `You are an expert Telegram Bot developer. Generate 100% syntactically correct, production-ready code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}.
+
+CRITICAL SYNTAX RULES FOR PYTHON:
+1. NEVER use JavaScript syntax like 'async function', 'const', 'let', or 'function'.
+2. ALL asynchronous functions in Python MUST start strictly with 'async def'.
+3. Double-check all function definitions to ensure valid Python 3.10+ syntax.
+4. Ensure requested email body formatting matches EXACTLY what user typed:
+"Name - ...
+Surname - ...
+Email - ...
+Number - ..."
+
+Output strictly in valid JSON with keys "mainCode" and "depCode".`;
 
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [
-                    { role: 'user', parts: [{ text: `Language: ${currentLanguage}\nBot Token: ${botToken}\nUser Requirements: ${userPrompt}` }] }
+                    { role: 'user', parts: [{ text: `Language: ${currentLanguage}\nBot Token: ${botToken}\nUser Prompt: ${userPrompt}` }] }
                 ],
                 systemInstruction: { parts: [{ text: systemPrompt }] },
                 generationConfig: { responseMimeType: "application/json" }
@@ -502,35 +528,27 @@ Example JSON output format:
             });
 
             if (!res.ok) throw new Error(`Gemini API Error: ${res.status}`);
-            const data = await res.json();
-            const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
             
-            if (responseText) {
-                const parsed = JSON.parse(responseText);
-                generatedMainCode = parsed.mainCode || '';
-                generatedDepCode = parsed.depCode || '';
-            } else {
-                throw new Error("Empty response from Gemini API");
-            }
+            const data = await res.json();
+            const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const jsonRes = JSON.parse(textResponse);
+
+            generatedMainCode = jsonRes.mainCode;
+            generatedDepCode = jsonRes.depCode;
         }
 
-        // Fallback Code Synthesizer
-        function synthesizeFallbackCode(prompt, token) {
-            const includeEmail = prompt.toLowerCase().includes('email') || prompt.toLowerCase().includes('mail') || document.getElementById('optEmail').checked;
-            const targetEmail = prompt.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0] || 'koryunkvk@gmail.com';
-
+        function synthesizeFallbackCode(userPrompt, botToken) {
             if (currentLanguage === 'python') {
-                generatedDepCode = `python-telegram-bot>=20.0\npython-dotenv>=1.0.0`;
                 generatedMainCode = `import logging
 import smtplib
+import asyncio
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import (
     Application,
     CommandHandler,
     MessageHandler,
-    CallbackQueryHandler,
     ConversationHandler,
     ContextTypes,
     filters
@@ -543,34 +561,33 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Bot Token
-BOT_TOKEN = "${token}"
+# Bot Token Configuration
+BOT_TOKEN = "${botToken}"
 
 # Conversation States
 NAME, SURNAME, EMAIL, PHONE = range(4)
 
-${includeEmail ? `# SMTP Configuration
+# SMTP Mail Settings (Configure your credentials)
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 SENDER_EMAIL = "your_email@gmail.com"
 SENDER_PASSWORD = "your_app_password"  # Google App Password
-RECIPIENT_EMAIL = "${targetEmail}"
+RECIPIENT_EMAIL = "koryunkvk@gmail.com"
 
 def send_notification_email(user_data):
     try:
         msg = MIMEMultipart()
         msg['From'] = SENDER_EMAIL
         msg['To'] = RECIPIENT_EMAIL
-        msg['Subject'] = f"New Bot Application from {user_data.get('name')} {user_data.get('surname')}"
+        msg['Subject'] = f"New Contact Details: {user_data.get('name')} {user_data.get('surname')}"
         
-        body = f"""
-        New Form Submission:
-        --------------------
-        Name: {user_data.get('name')}
-        Surname: {user_data.get('surname')}
-        Email: {user_data.get('email')}
-        Phone: {user_data.get('phone')}
-        """
+        # Exact requested format:
+        body = (
+            f"Name - {user_data.get('name')}\\n"
+            f"Surname - {user_data.get('surname')}\\n"
+            f"Email - {user_data.get('email')}\\n"
+            f"Number - {user_data.get('phone')}"
+        )
         msg.attach(MIMEText(body, 'plain'))
         
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
@@ -578,77 +595,56 @@ def send_notification_email(user_data):
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
         server.send_message(msg)
         server.quit()
-        logger.info("Email sent successfully")
+        logger.info("Email dispatched successfully to %s", RECIPIENT_EMAIL)
     except Exception as e:
-        logger.error(f"Failed to send email: {e}")
-` : ''}
+        logger.error("Failed to send email: %s", e)
 
-async function start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("📝 Start Form", callback_data="start_form")],
-        [InlineKeyboardButton("ℹ️ Help", callback_data="help")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        "👋 Welcome! I am your automated assistant.\\nClick 'Start Form' to begin.",
-        reply_markup=reply_markup
-    )
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("👋 Hello! Please enter your **First Name**:")
+    return NAME
 
-async function button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
-    if query.data == "start_form":
-        await query.edit_message_text("Great! Let's start.\\nPlease enter your **First Name**:")
-        return NAME
-    elif query.data == "help":
-        await query.edit_message_text("This bot collects user details and submits them. Click /start to run again.")
-        return ConversationHandler.END
-
-async function get_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['name'] = update.message.text
-    await update.message.reply_text("Thanks! Now enter your **Surname**:")
+async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    context.user_data['name'] = update.message.text.strip()
+    await update.message.reply_text("Thank you! Now enter your **Surname**:")
     return SURNAME
 
-async function get_surname(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['surname'] = update.message.text
+async def get_surname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    context.user_data['surname'] = update.message.text.strip()
     await update.message.reply_text("Got it. Next, enter your **Email Address**:")
     return EMAIL
 
-async function get_email(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['email'] = update.message.text
+async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    context.user_data['email'] = update.message.text.strip()
     await update.message.reply_text("Perfect. Finally, enter your **Phone Number**:")
     return PHONE
 
-async function get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data['phone'] = update.message.text
+async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    context.user_data['phone'] = update.message.text.strip()
     user_data = context.user_data
     
-    ${includeEmail ? `send_notification_email(user_data)` : ''}
+    # Run SMTP dispatch in thread pool to avoid blocking bot loop
+    await asyncio.to_thread(send_notification_email, user_data)
     
     summary = (
-        "✅ **Application Complete!**\\n\\n"
-        f"**Name:** {user_data.get('name')} {user_data.get('surname')}\\n"
-        f"**Email:** {user_data.get('email')}\\n"
-        f"**Phone:** {user_data.get('phone')}\\n\\n"
-        "Your details have been recorded and emailed!"
+        "✅ **Details Submitted!**\\n\\n"
+        f"Name - {user_data.get('name')}\\n"
+        f"Surname - {user_data.get('surname')}\\n"
+        f"Email - {user_data.get('email')}\\n"
+        f"Number - {user_data.get('phone')}\\n\\n"
+        "Your details have been e-mailed to koryunkvk@gmail.com!"
     )
     await update.message.reply_text(summary, parse_mode='Markdown')
     return ConversationHandler.END
 
-async function cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Operation cancelled. Type /start to begin again.")
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    await update.message.reply_text("Operation cancelled. Send /start to begin again.")
     return ConversationHandler.END
 
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
 
     conv_handler = ConversationHandler(
-        entry_points=[
-            CommandHandler('start', start),
-            CallbackQueryHandler(button_click, pattern='^start_form$')
-        ],
+        entry_points=[CommandHandler('start', start)],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
             SURNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_surname)],
@@ -659,98 +655,81 @@ def main():
     )
 
     app.add_handler(conv_handler)
-    app.add_handler(CallbackQueryHandler(button_click))
-
     print("🤖 Bot started successfully! Press Ctrl+C to stop.")
     app.run_polling()
 
 if __name__ == "__main__":
     main()`;
+                generatedDepCode = `python-telegram-bot>=20.0\npython-dotenv>=1.0.0`;
             } else {
-                generatedDepCode = `{
-  "name": "telegram-bot",
-  "version": "1.0.0",
-  "main": "bot.js",
-  "dependencies": {
-    "telegraf": "^4.12.0",
-    "nodemailer": "^6.9.0"
-  }
-}`;
-                generatedMainCode = `const { Telegraf, Markup, Sessions } = require('telegraf');
+                generatedMainCode = `const { Telegraf, Scenes, session } = require('telegraf');
 const nodemailer = require('nodemailer');
 
-const BOT_TOKEN = '${token}';
-const bot = new Telegraf(BOT_TOKEN);
+const BOT_TOKEN = "${botToken}";
+const RECIPIENT_EMAIL = "koryunkvk@gmail.com";
 
-${includeEmail ? `// Nodemailer Transport Setup
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'your_email@gmail.com',
-    pass: 'your_app_password'
-  }
+    service: 'gmail',
+    auth: {
+        user: 'your_email@gmail.com',
+        pass: 'your_app_password'
+    }
 });
 
-async function sendEmail(data) {
-  const mailOptions = {
-    from: 'your_email@gmail.com',
-    to: '${targetEmail}',
-    subject: \`New Application: \${data.name} \${data.surname}\`,
-    text: \`Name: \${data.name}\\nSurname: \${data.surname}\\nEmail: \${data.email}\\nPhone: \${data.phone}\`
-  };
-  return transporter.sendMail(mailOptions);
-}` : ''}
+const contactWizard = new Scenes.WizardScene(
+    'contact-wizard',
+    async (ctx) => {
+        await ctx.reply("👋 Hello! Please enter your First Name:");
+        return ctx.wizard.next();
+    },
+    async (ctx) => {
+        ctx.wizard.state.name = ctx.message.text.trim();
+        await ctx.reply("Thank you! Now enter your Surname:");
+        return ctx.wizard.next();
+    },
+    async (ctx) => {
+        ctx.wizard.state.surname = ctx.message.text.trim();
+        await ctx.reply("Got it. Next, enter your Email Address:");
+        return ctx.wizard.next();
+    },
+    async (ctx) => {
+        ctx.wizard.state.email = ctx.message.text.trim();
+        await ctx.reply("Perfect. Finally, enter your Phone Number:");
+        return ctx.wizard.next();
+    },
+    async (ctx) => {
+        ctx.wizard.state.phone = ctx.message.text.trim();
+        const data = ctx.wizard.state;
 
-const userSessions = {};
+        const body = \`Name - \${data.name}\\nSurname - \${data.surname}\\nEmail - \${data.email}\\nNumber - \${data.phone}\`;
 
-bot.start((ctx) => {
-  ctx.reply('👋 Welcome to Telegram Bot Studio! Click below to start:', Markup.inlineKeyboard([
-    [Markup.button.callback('📝 Start Form', 'START_FORM')],
-    [Markup.button.callback('ℹ️ Help', 'HELP')]
-  ]));
-});
+        try {
+            await transporter.sendMail({
+                from: 'your_email@gmail.com',
+                to: RECIPIENT_EMAIL,
+                subject: \`New Contact Details: \${data.name} \${data.surname}\`,
+                text: body
+            });
+            await ctx.reply("✅ Your details have been emailed to koryunkvk@gmail.com!\\n\\n" + body);
+        } catch (e) {
+            console.error("Email error:", e);
+            await ctx.reply("⚠️ Details received, but email failed to dispatch.");
+        }
+        return ctx.scene.leave();
+    }
+);
 
-bot.action('START_FORM', (ctx) => {
-  userSessions[ctx.from.id] = { step: 'NAME' };
-  ctx.reply('Please enter your First Name:');
-});
+const bot = new Telegraf(BOT_TOKEN);
+const stage = new Scenes.Stage([contactWizard]);
 
-bot.action('HELP', (ctx) => {
-  ctx.reply('This bot collects your information step by step. Use /start to begin.');
-});
+bot.use(session());
+bot.use(stage.middleware());
+bot.command('start', (ctx) => ctx.scene.enter('contact-wizard'));
 
-bot.on('text', async (ctx) => {
-  const userId = ctx.from.id;
-  const session = userSessions[userId];
-  if (!session) return ctx.reply('Send /start to begin.');
-
-  switch (session.step) {
-    case 'NAME':
-      session.name = ctx.message.text;
-      session.step = 'SURNAME';
-      ctx.reply('Great! Now enter your Surname:');
-      break;
-    case 'SURNAME':
-      session.surname = ctx.message.text;
-      session.step = 'EMAIL';
-      ctx.reply('Got it! Now enter your Email Address:');
-      break;
-    case 'EMAIL':
-      session.email = ctx.message.text;
-      session.step = 'PHONE';
-      ctx.reply('Thanks! Lastly, enter your Phone Number:');
-      break;
-    case 'PHONE':
-      session.phone = ctx.message.text;
-      ${includeEmail ? `await sendEmail(session);` : ''}
-      ctx.reply(\`✅ Form Complete!\\n\\nName: \${session.name} \${session.surname}\\nEmail: \${session.email}\\nPhone: \${session.phone}\`);
-      delete userSessions[userId];
-      break;
-  }
-});
-
-bot.launch().then(() => console.log('🤖 Node.js Telegraf bot is running!'));
-`;
+bot.launch().then(() => console.log('🤖 Telegraf Bot running...'));
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));`;
+                generatedDepCode = `{\n  "name": "telegram-contact-bot",\n  "version": "1.0.0",\n  "main": "bot.js",\n  "dependencies": {\n    "telegraf": "^4.12.0",\n    "nodemailer": "^6.9.0"\n  }\n}`;
             }
         }
 
@@ -759,10 +738,9 @@ bot.launch().then(() => console.log('🤖 Node.js Telegraf bot is running!'));
             document.getElementById('depCodeDisplay').textContent = generatedDepCode;
         }
 
-        // Copy & Download Functions
         function copyCurrentCode() {
             navigator.clipboard.writeText(generatedMainCode);
-            alert("Main bot script copied to clipboard!");
+            alert("Main script code copied to clipboard!");
         }
 
         function copyDepCode() {
@@ -788,115 +766,82 @@ bot.launch().then(() => console.log('🤖 Node.js Telegraf bot is running!'));
             URL.revokeObjectURL(url);
         }
 
-        // Live Interactive Telegram Simulator Logic
+        // Simulator Logic
         function clearSimulator() {
-            const box = document.getElementById('simMessages');
-            box.innerHTML = `<div class="text-center my-2"><span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span></div>`;
-            document.getElementById('simInlineArea').innerHTML = '';
+            const messages = document.getElementById('simMessages');
+            messages.innerHTML = `
+                <div class="text-center my-2">
+                    <span class="bg-slate-900/80 text-slate-400 text-[10px] px-2.5 py-1 rounded-full border border-slate-800">Bot session initialized</span>
+                </div>
+            `;
             simStep = 'start';
             simUserData = {};
         }
 
         function resetSimulator() {
             clearSimulator();
-            addBotSimMessage("Bot logic updated! Send /start to test live interactions.");
         }
 
         function sendSimMessage() {
             const input = document.getElementById('simInput');
-            const txt = input.value.trim();
-            if (!txt) return;
+            const text = input.value.trim();
+            if (!text) return;
 
-            addUserSimMessage(txt);
+            addSimBubble(text, 'user');
             input.value = '';
 
-            setTimeout(() => processSimLogic(txt), 400);
+            setTimeout(() => processSimResponse(text), 400);
         }
 
-        function processSimLogic(text) {
-            if (text === '/start') {
-                simStep = 'start';
-                simUserData = {};
-                addBotSimMessage("👋 Welcome! Click below to start the form:", [
-                    { text: "📝 Start Form", action: "start_form" },
-                    { text: "ℹ️ Help", action: "help" }
-                ]);
+        function addSimBubble(text, sender) {
+            const messages = document.getElementById('simMessages');
+            const wrap = document.createElement('div');
+            
+            if (sender === 'user') {
+                wrap.className = 'flex justify-end my-1';
+                wrap.innerHTML = `<div class="bg-sky-600 text-white px-3 py-1.5 rounded-2xl rounded-tr-xs max-w-[80%] break-words">${escapeHtml(text)}</div>`;
+            } else {
+                wrap.className = 'flex justify-start my-1';
+                wrap.innerHTML = `<div class="bg-slate-800 text-slate-100 px-3 py-1.5 rounded-2xl rounded-tl-xs max-w-[80%] border border-slate-700/60 whitespace-pre-wrap break-words">${escapeHtml(text)}</div>`;
+            }
+            
+            messages.appendChild(wrap);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function processSimResponse(input) {
+            if (input === '/start') {
+                simStep = 'name';
+                addSimBubble("👋 Welcome! Please enter your First Name:", 'bot');
                 return;
             }
 
-            switch (simStep) {
+            switch(simStep) {
                 case 'name':
-                    simUserData.name = text;
+                    simUserData.name = input;
                     simStep = 'surname';
-                    addBotSimMessage("Thanks! Now enter your **Surname**:");
+                    addSimBubble("Thank you! Now enter your Surname:", 'bot');
                     break;
                 case 'surname':
-                    simUserData.surname = text;
+                    simUserData.surname = input;
                     simStep = 'email';
-                    addBotSimMessage("Got it! Next, enter your **Email Address**:");
+                    addSimBubble("Got it. Next, enter your Email Address:", 'bot');
                     break;
                 case 'email':
-                    simUserData.email = text;
+                    simUserData.email = input;
                     simStep = 'phone';
-                    addBotSimMessage("Perfect! Finally, enter your **Phone Number**:");
+                    addSimBubble("Perfect. Finally, enter your Phone Number:", 'bot');
                     break;
                 case 'phone':
-                    simUserData.phone = text;
+                    simUserData.phone = input;
                     simStep = 'done';
-                    addBotSimMessage(`✅ **Application Completed!**\n\n• **Name:** ${simUserData.name} ${simUserData.surname}\n• **Email:** ${simUserData.email}\n• **Phone:** ${simUserData.phone}\n\n*Notification sent to recipient!*`);
+                    const summary = `✅ Contact Details Saved!\n\nName - ${simUserData.name}\nSurname - ${simUserData.surname}\nEmail - ${simUserData.email}\nNumber - ${simUserData.phone}\n\n[Emailed to koryunkvk@gmail.com]`;
+                    addSimBubble(summary, 'bot');
                     break;
                 default:
-                    addBotSimMessage("Type /start to start the interactive form.");
+                    addSimBubble("Send /start to begin a new form submission.", 'bot');
+                    break;
             }
-        }
-
-        function handleSimInlineClick(action) {
-            if (action === 'start_form') {
-                addUserSimMessage("📝 Start Form");
-                simStep = 'name';
-                setTimeout(() => addBotSimMessage("Please enter your **First Name**:"), 300);
-            } else if (action === 'help') {
-                addUserSimMessage("ℹ️ Help");
-                setTimeout(() => addBotSimMessage("This bot guides users through multi-step form submissions."), 300);
-            }
-            document.getElementById('simInlineArea').innerHTML = '';
-        }
-
-        function addUserSimMessage(txt) {
-            const box = document.getElementById('simMessages');
-            box.innerHTML += `
-                <div class="flex justify-end">
-                    <div class="bg-sky-600 text-white rounded-2xl rounded-tr-none px-3 py-2 max-w-[80%] shadow">
-                        ${escapeHtml(txt)}
-                    </div>
-                </div>
-            `;
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function addBotSimMessage(txt, buttons = []) {
-            const box = document.getElementById('simMessages');
-            box.innerHTML += `
-                <div class="flex justify-start">
-                    <div class="bg-slate-800 text-slate-100 rounded-2xl rounded-tl-none px-3 py-2 max-w-[80%] shadow border border-slate-700/50">
-                        ${txt.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-            `;
-
-            const btnArea = document.getElementById('simInlineArea');
-            btnArea.innerHTML = '';
-            if (buttons && buttons.length > 0) {
-                buttons.forEach(b => {
-                    const btn = document.createElement('button');
-                    btn.className = "px-3 py-1.5 bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 text-xs rounded-xl border border-sky-500/30 transition-colors";
-                    btn.textContent = b.text;
-                    btn.onclick = () => handleSimInlineClick(b.action);
-                    btnArea.appendChild(btn);
-                });
-            }
-
-            box.scrollTop = box.scrollHeight;
         }
 
         function escapeHtml(str) {
@@ -904,19 +849,11 @@ bot.launch().then(() => console.log('🤖 Node.js Telegraf bot is running!'));
         }
 
         // Modal Controls
-        function closeKeyModal() {
-            document.getElementById('keyModal').classList.add('hidden');
-        }
-
-        document.getElementById('openKeyModalBtn').onclick = () => {
-            document.getElementById('keyModal').classList.remove('hidden');
-        };
-
+        function openKeyModal() { document.getElementById('keyModal').classList.remove('hidden'); }
+        function closeKeyModal() { document.getElementById('keyModal').classList.add('hidden'); }
         function saveModalKey() {
-            const key = document.getElementById('modalApiKeyInput').value.trim();
-            if (key) {
-                document.getElementById('apiKeyStatusText').textContent = "Custom Key Saved";
-            }
+            const val = document.getElementById('modalApiKeyInput').value.trim();
+            document.getElementById('apiKeyStatusText').textContent = val ? "Key Set" : "API Key Configured";
             closeKeyModal();
         }
     </script>
