@@ -462,7 +462,7 @@
             const apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
             const payload = {
-                model: 'meta-llama/llama-3.3-70b-instruct:free',
+                model: 'openrouter/free',
                 messages: [
                     { role: 'system', content: systemPrompt + " Make sure your response is formatted as valid JSON only, without any outer markdown fences if possible." },
                     { role: 'user', content: `Language: ${currentLanguage}\nBot Token: ${botToken}\nUser Prompt: ${userPrompt}` }
