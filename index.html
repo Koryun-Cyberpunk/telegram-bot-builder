@@ -392,8 +392,8 @@
         let simStep = 'start';
         let simUserData = {};
 
-        // Default Fallback Groq Key
-        const DEFAULT_GROQ_KEY = "AQ.Ab8RN6I1h7TKA1tjsFLAuUDFdOyzobfs2BKG9i-7tS4qyYMlxA";
+        // Default Fallback Gemini Key
+        const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6I1h7TKA1tjsFLAuUDFdOyzobfs2BKG9i-7tS4qyYMlxA";
 
         // DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
@@ -483,10 +483,10 @@
             const btn = document.getElementById('generateBtn');
             const userPrompt = document.getElementById('promptInput').value.trim();
             const botToken = document.getElementById('botTokenInput').value.trim() || 'YOUR_TELEGRAM_BOT_TOKEN';
-            
-            // Check if custom key is entered; if empty, fallback to Groq key
-            const inputKey = document.getElementById('customApiKey').value.trim() || document.getElementById('modalApiKeyInput').value.trim();
-            const activeApiKey = inputKey || DEFAULT_GROQ_KEY;
+    
+            // Use user input if provided, otherwise fallback to your default Gemini key
+            const inputKey = document.getElementById('customApiKey')?.value.trim() || document.getElementById('modalApiKeyInput')?.value.trim();
+            const activeApiKey = inputKey || DEFAULT_GEMINI_KEY;
 
             if (!userPrompt) {
                 alert("Please enter a bot architecture prompt first!");
@@ -497,61 +497,24 @@
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-white"></i> <span>Synthesizing Code...</span>`;
 
             try {
-                if (inputKey && !inputKey.startsWith("gsk_")) {
-                    // Custom Gemini Key
-                    await generateWithGemini(userPrompt, botToken, activeApiKey);
-                } else {
-                    // Groq LLaMA API
-                    await generateWithGroq(userPrompt, botToken, activeApiKey);
-                }
+                // Send request directly to Gemini API
+                await generateWithGemini(userPrompt, botToken, activeApiKey);
             } catch (err) {
                 console.error('API Generation Error:', err);
                 alert('Failed to synthesize code. Please check your API key or connection.');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i> <span>Generate Complete Bot Code</span>`;
-                
+        
                 generatedMainCode = sanitizePythonCode(generatedMainCode);
                 updateDisplay();
                 resetSimulator();
             }
         }
 
-        async function generateWithGroq(userPrompt, botToken, apiKey) {
-            const systemPrompt = `You are an expert Telegram Bot developer. Generate 100% syntactically correct, production-ready code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}.
-Bot Token to include in code: "${botToken}".
-CRITICAL: Respond strictly with valid JSON containing two key string fields: "mainCode" and "depCode". Do NOT wrap the JSON inside markdown code blocks.`;
-
-            const apiUrl = `https://api.groq.com/openai/v1/chat/completions`;
-
-            const res = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [
-                        { role: "system", content: systemPrompt },
-                        { role: "user", content: userPrompt }
-                    ],
-                    response_format: { type: "json_object" }
-                })
-            });
-
-            if (!res.ok) throw new Error(`Groq API Error: ${res.status}`);
-
-            const data = await res.json();
-            const jsonRes = JSON.parse(data.choices[0].message.content);
-
-            generatedMainCode = jsonRes.mainCode;
-            generatedDepCode = jsonRes.depCode;
-        }
-
         async function generateWithGemini(userPrompt, botToken, apiKey) {
             const systemPrompt = `You are an expert Telegram Bot developer. Generate 100% syntactically correct, production-ready code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}. Output strictly in valid JSON with keys "mainCode" and "depCode".`;
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
             const payload = {
                 contents: [
