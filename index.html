@@ -72,14 +72,14 @@
                         Production Ready
                     </span>
                 </div>
-                <p class="text-xs text-slate-400">Generate, test, & deploy production Telegram bots powered by AI</p>
+                <p class="text-xs text-slate-400">Generate, test, & deploy production Telegram bots powered by OpenRouter</p>
             </div>
         </div>
 
         <div class="flex items-center space-x-3">
             <button id="openKeyModalBtn" onclick="openKeyModal()" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg transition-colors">
                 <i class="fa-solid fa-key text-sky-400"></i>
-                <span id="apiKeyStatusText">API Key Configured</span>
+                <span id="apiKeyStatusText">OpenRouter Key Configured</span>
             </button>
             <a href="https://t.me/BotFather" target="_blank" class="text-xs flex items-center space-x-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 px-3 py-1.5 rounded-lg transition-colors">
                 <i class="fa-brands fa-telegram"></i>
@@ -163,9 +163,9 @@
 
                 <!-- Optional Custom Key Override -->
                 <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
-                    <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">Custom API Key (Optional)</label>
-                    <input type="password" id="customApiKey" placeholder="API Key (leave empty for built-in generator)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
-                    <p class="text-[10px] text-slate-500 mt-1">Uses built-in default key if left blank.</p>
+                    <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">OpenRouter API Key (Optional)</label>
+                    <input type="password" id="customApiKey" placeholder="sk-or-v1-..." class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
+                    <p class="text-[10px] text-slate-500 mt-1">Uses pre-configured OpenRouter key if left blank.</p>
                 </div>
 
                 <!-- Generate Action Button -->
@@ -336,15 +336,15 @@
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-key text-sky-400"></i> API Key Config
+                    <i class="fa-solid fa-key text-sky-400"></i> OpenRouter API Key Config
                 </h3>
                 <button onclick="closeKeyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-                Provide your custom Gemini API key.
+                Provide your custom OpenRouter API key.
             </p>
             <div>
-                <input type="password" id="modalApiKeyInput" placeholder="API Key..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
+                <input type="password" id="modalApiKeyInput" placeholder="sk-or-v1-..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
             </div>
             <div class="flex justify-end space-x-2">
                 <button onclick="saveModalKey()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold rounded-xl transition-colors">
@@ -360,8 +360,8 @@
         let generatedDepCode = '';
         let simStep = 'start';
 
-        // Your default key string from Google AI Studio
-        const DEFAULT_GEMINI_KEY = "AQ.Ab8RN6JLiuycHpzSTUUeD0O4DyrPd3teKxnm9Zd0FSsjfpApDg";
+        // Configured OpenRouter API Key
+        const DEFAULT_OPENROUTER_KEY = "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";
 
         document.addEventListener('DOMContentLoaded', () => {
             initDefaults();
@@ -434,7 +434,7 @@
             const userPrompt = document.getElementById('promptInput').value.trim();
             const botToken = document.getElementById('botTokenInput').value.trim() || 'YOUR_TELEGRAM_BOT_TOKEN';
             const inputKey = document.getElementById('customApiKey')?.value.trim() || document.getElementById('modalApiKeyInput')?.value.trim();
-            const activeApiKey = inputKey || DEFAULT_GEMINI_KEY;
+            const activeApiKey = inputKey || DEFAULT_OPENROUTER_KEY;
 
             if (!userPrompt) {
                 alert("Please enter a bot architecture prompt first!");
@@ -445,7 +445,7 @@
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-white"></i> <span>Synthesizing Code...</span>`;
 
             try {
-                await generateWithGemini(userPrompt, botToken, activeApiKey);
+                await generateWithOpenRouter(userPrompt, botToken, activeApiKey);
             } catch (err) {
                 console.error('API Generation Error:', err);
                 alert('Failed to synthesize code: ' + err.message);
@@ -456,24 +456,27 @@
             }
         }
 
-        async function generateWithGemini(userPrompt, botToken, apiKey) {
+        async function generateWithOpenRouter(userPrompt, botToken, apiKey) {
             const systemPrompt = `You are an expert Telegram Bot developer. Generate syntactically correct code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+' : 'Node.js using Telegraf'}. Return strictly JSON with keys "mainCode" and "depCode".`;
 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+            const apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
 
             const payload = {
-                contents: [
-                    { role: 'user', parts: [{ text: `Language: ${currentLanguage}\nBot Token: ${botToken}\nUser Prompt: ${userPrompt}` }] }
+                model: 'meta-llama/llama-3.3-70b-instruct:free',
+                messages: [
+                    { role: 'system', content: systemPrompt + " Make sure your response is formatted as valid JSON only, without any outer markdown fences if possible." },
+                    { role: 'user', content: `Language: ${currentLanguage}\nBot Token: ${botToken}\nUser Prompt: ${userPrompt}` }
                 ],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                generationConfig: { responseMimeType: "application/json" }
+                response_format: { type: "json_object" }
             };
 
             const res = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    'x-goog-api-key': apiKey
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': window.location.origin,
+                    'X-Title': 'Telegram Bot Studio'
                 },
                 body: JSON.stringify(payload)
             });
@@ -484,8 +487,11 @@
             }
 
             const data = await res.json();
-            const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            const jsonRes = JSON.parse(rawText);
+            const rawContent = data.choices?.[0]?.message?.content;
+            
+            // Clean markdown blocks if any slip through
+            const cleanJsonStr = rawContent.replace(/```json|```/g, '').trim();
+            const jsonRes = JSON.parse(cleanJsonStr);
 
             generatedMainCode = jsonRes.mainCode;
             generatedDepCode = jsonRes.depCode;
