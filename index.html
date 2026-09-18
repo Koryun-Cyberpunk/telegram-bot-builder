@@ -132,7 +132,7 @@
                     <div class="flex justify-between items-center mb-1.5">
                         <label for="promptInput" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Bot Architecture & Logic</label>
                         <button onclick="loadTemplatePrompt()" class="text-[11px] text-sky-400 hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> Load Contact Form Example
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Load Rating Example
                         </button>
                     </div>
                     <textarea id="promptInput" rows="6" placeholder="Describe what your bot should do in plain English." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none resize-none transition-all leading-relaxed">A bot that upon receiving /start asks the user to rate their experience from 1 to 5 stars using inline buttons. If they rate 1-3 stars, it asks for detailed feedback on what went wrong. If they rate 4-5 stars, it asks for a testimonial. Finally, it sends a summary of the rating and feedback to the admin and saves it with a thank you message.</textarea>
@@ -163,11 +163,11 @@
                     </div>
                 </div>
 
-                <!-- Optional Gemini API Key inline box -->
+                <!-- Optional Gemini/Groq API Key inline box -->
                 <div class="p-3 rounded-xl bg-slate-950 border border-slate-800/80">
-                    <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">Custom Gemini API Key (Optional)</label>
-                    <input type="password" id="customApiKey" placeholder="AI Studio Key (leave empty for built-in generator)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
-                    <p class="text-[10px] text-slate-500 mt-1">Generates customized production scripts directly via client-side Gemini Flash AI.</p>
+                    <label for="customApiKey" class="block text-[11px] font-semibold text-slate-400 mb-1">Custom API Key (Optional)</label>
+                    <input type="password" id="customApiKey" placeholder="API Key (leave empty for built-in generator)" class="w-full bg-slate-900 border border-slate-800 focus:border-sky-500 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none">
+                    <p class="text-[10px] text-slate-500 mt-1">Uses built-in default Groq key if left blank.</p>
                 </div>
 
                 <!-- Generate Action Button -->
@@ -222,7 +222,7 @@
                         <span class="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Main Application</span>
                     </div>
                     <div class="flex-1 overflow-auto p-4 bg-slate-900">
-                        <pre><code id="mainCodeDisplay" class="text-xs text-sky-100 font-mono leading-relaxed whitespace-pre"># Click "Generate Complete Bot Code" to generate your Telegram bot logic.</code></pre>
+                        <pre><code id="mainCodeDisplay" class="text-xs text-sky-100 font-mono leading-relaxed whitespace-pre"># Click "Generate Complete Bot Code" to construct your custom bot script.</code></pre>
                     </div>
                 </div>
 
@@ -238,8 +238,7 @@
                         </button>
                     </div>
                     <div class="flex-1 overflow-auto p-4 bg-slate-900">
-                        <pre><code id="depCodeDisplay" class="text-xs text-slate-300 font-mono leading-relaxed whitespace-pre">python-telegram-bot>=20.0
-python-dotenv>=1.0.0</code></pre>
+                        <pre><code id="depCodeDisplay" class="text-xs text-slate-300 font-mono leading-relaxed whitespace-pre"># Dependencies will appear here...</code></pre>
                     </div>
                 </div>
             </div>
@@ -366,15 +365,15 @@ python-dotenv>=1.0.0</code></pre>
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center">
                 <h3 class="font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-key text-sky-400"></i> Gemini API Key Config
+                    <i class="fa-solid fa-key text-sky-400"></i> API Key Config
                 </h3>
                 <button onclick="closeKeyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">
-                Provide your Gemini API key to customize bot code logic using Gemini 2.5/3.0 Flash. If left blank, the studio uses a built-in generator.
+                Provide your custom API key (Gemini or Groq) to customize bot code logic. If left blank, the studio uses the built-in fallback key.
             </p>
             <div>
-                <input type="password" id="modalApiKeyInput" placeholder="AI Studio Key..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
+                <input type="password" id="modalApiKeyInput" placeholder="API Key..." class="w-full bg-slate-950 border border-slate-800 focus:border-sky-500 rounded-xl p-3 text-xs text-slate-200 outline-none">
             </div>
             <div class="flex justify-end space-x-2">
                 <button onclick="saveModalKey()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold rounded-xl transition-colors">
@@ -384,7 +383,7 @@ python-dotenv>=1.0.0</code></pre>
         </div>
     </div>
 
-    <!-- Application Logic & Gemini Integration -->
+    <!-- Application Logic -->
     <script>
         // Global State
         let currentLanguage = 'python';
@@ -393,6 +392,9 @@ python-dotenv>=1.0.0</code></pre>
         let simStep = 'start';
         let simUserData = {};
 
+        // Default Fallback Groq Key
+        const DEFAULT_GROQ_KEY = "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";
+
         // DOM Ready
         document.addEventListener('DOMContentLoaded', () => {
             initDefaults();
@@ -400,7 +402,9 @@ python-dotenv>=1.0.0</code></pre>
 
         function initDefaults() {
             setLanguage('python');
-            generateBotCode();
+            // Empty code displays on page load until user generates
+            document.getElementById('mainCodeDisplay').textContent = '# Click "Generate Complete Bot Code" to construct your custom bot script.';
+            document.getElementById('depCodeDisplay').textContent = '# Dependencies will appear here...';
         }
 
         // Language Switcher
@@ -446,11 +450,7 @@ python-dotenv>=1.0.0</code></pre>
         }
 
         function loadTemplatePrompt() {
-            document.getElementById('promptInput').value = `A bot that after receiving "/start" it asks about contacts such as email, name/surname, phone number and then sends them exactly on "koryunkvk@gmail.com" email in this format:
-"Name - ...
-Surname - ...
-Email - ...
-Number - ..." where dots are the information`;
+            document.getElementById('promptInput').value = `A bot that upon receiving /start asks the user to rate their experience from 1 to 5 stars using inline buttons. If they rate 1-3 stars, it asks for detailed feedback on what went wrong. If they rate 4-5 stars, it asks for a testimonial. Finally, it sends a summary of the rating and feedback to the admin and saves it with a thank you message.`;
         }
 
         function switchTab(tab) {
@@ -473,9 +473,7 @@ Number - ..." where dots are the information`;
 
         function sanitizePythonCode(code) {
             if (currentLanguage === 'python') {
-                // Fix invalid async function keywords
                 code = code.replace(/async\s+function\s+/g, 'async def ');
-                // Fix generic function declarations
                 code = code.replace(/^function\s+/gm, 'def ');
             }
             return code;
@@ -485,46 +483,74 @@ Number - ..." where dots are the information`;
             const btn = document.getElementById('generateBtn');
             const userPrompt = document.getElementById('promptInput').value.trim();
             const botToken = document.getElementById('botTokenInput').value.trim() || 'YOUR_TELEGRAM_BOT_TOKEN';
-            const apiKey = document.getElementById('customApiKey').value.trim() || document.getElementById('modalApiKeyInput').value.trim();
+            
+            // Check if custom key is entered; if empty, fallback to Groq key
+            const inputKey = document.getElementById('customApiKey').value.trim() || document.getElementById('modalApiKeyInput').value.trim();
+            const activeApiKey = inputKey || DEFAULT_GROQ_KEY;
+
+            if (!userPrompt) {
+                alert("Please enter a bot architecture prompt first!");
+                return;
+            }
 
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-white"></i> <span>Synthesizing Code...</span>`;
 
             try {
-                if (apiKey) {
-                    await generateWithGemini(userPrompt, botToken, apiKey);
+                if (inputKey && !inputKey.startsWith("gsk_")) {
+                    // Custom Gemini Key
+                    await generateWithGemini(userPrompt, botToken, activeApiKey);
                 } else {
-                    synthesizeFallbackCode(userPrompt, botToken);
+                    // Groq LLaMA API
+                    await generateWithGroq(userPrompt, botToken, activeApiKey);
                 }
             } catch (err) {
                 console.error('API Generation Error:', err);
-                synthesizeFallbackCode(userPrompt, botToken);
+                alert('Failed to synthesize code. Please check your API key or connection.');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = `<i class="fa-solid fa-bolt text-amber-300"></i> <span>Generate Complete Bot Code</span>`;
                 
-                // Sanitize before display
                 generatedMainCode = sanitizePythonCode(generatedMainCode);
                 updateDisplay();
                 resetSimulator();
             }
         }
 
-        async function generateWithGemini(userPrompt, botToken, apiKey) {
+        async function generateWithGroq(userPrompt, botToken, apiKey) {
             const systemPrompt = `You are an expert Telegram Bot developer. Generate 100% syntactically correct, production-ready code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}.
+Bot Token to include in code: "${botToken}".
+CRITICAL: Respond strictly with valid JSON containing two key string fields: "mainCode" and "depCode". Do NOT wrap the JSON inside markdown code blocks.`;
 
-CRITICAL SYNTAX RULES FOR PYTHON:
-1. NEVER use JavaScript syntax like 'async function', 'const', 'let', or 'function'.
-2. ALL asynchronous functions in Python MUST start strictly with 'async def'.
-3. Double-check all function definitions to ensure valid Python 3.10+ syntax.
-4. Ensure requested email body formatting matches EXACTLY what user typed:
-"Name - ...
-Surname - ...
-Email - ...
-Number - ..."
+            const apiUrl = `https://api.groq.com/openai/v1/chat/completions`;
 
-Output strictly in valid JSON with keys "mainCode" and "depCode".`;
+            const res = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        { role: "system", content: systemPrompt },
+                        { role: "user", content: userPrompt }
+                    ],
+                    response_format: { type: "json_object" }
+                })
+            });
 
+            if (!res.ok) throw new Error(`Groq API Error: ${res.status}`);
+
+            const data = await res.json();
+            const jsonRes = JSON.parse(data.choices[0].message.content);
+
+            generatedMainCode = jsonRes.mainCode;
+            generatedDepCode = jsonRes.depCode;
+        }
+
+        async function generateWithGemini(userPrompt, botToken, apiKey) {
+            const systemPrompt = `You are an expert Telegram Bot developer. Generate 100% syntactically correct, production-ready code in ${currentLanguage === 'python' ? 'Python using python-telegram-bot v20+ async' : 'Node.js using Telegraf'}. Output strictly in valid JSON with keys "mainCode" and "depCode".`;
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
             const payload = {
@@ -544,207 +570,10 @@ Output strictly in valid JSON with keys "mainCode" and "depCode".`;
             if (!res.ok) throw new Error(`Gemini API Error: ${res.status}`);
             
             const data = await res.json();
-            const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            const jsonRes = JSON.parse(textResponse);
+            const jsonRes = JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text);
 
             generatedMainCode = jsonRes.mainCode;
             generatedDepCode = jsonRes.depCode;
-        }
-
-        function synthesizeFallbackCode(userPrompt, botToken) {
-            if (currentLanguage === 'python') {
-                generatedMainCode = `import logging
-import smtplib
-import asyncio
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    ConversationHandler,
-    ContextTypes,
-    filters
-)
-
-# Enable Logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-# Bot Token Configuration
-BOT_TOKEN = "${botToken}"
-
-# Conversation States
-NAME, SURNAME, EMAIL, PHONE = range(4)
-
-# SMTP Mail Settings (Configure your credentials)
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-SENDER_EMAIL = "your_email@gmail.com"
-SENDER_PASSWORD = "your_app_password"  # Google App Password
-RECIPIENT_EMAIL = "koryunkvk@gmail.com"
-
-def send_notification_email(user_data):
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = SENDER_EMAIL
-        msg['To'] = RECIPIENT_EMAIL
-        msg['Subject'] = f"New Contact Details: {user_data.get('name')} {user_data.get('surname')}"
-        
-        # Exact requested format:
-        body = (
-            f"Name - {user_data.get('name')}\\n"
-            f"Surname - {user_data.get('surname')}\\n"
-            f"Email - {user_data.get('email')}\\n"
-            f"Number - {user_data.get('phone')}"
-        )
-        msg.attach(MIMEText(body, 'plain'))
-        
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.send_message(msg)
-        server.quit()
-        logger.info("Email dispatched successfully to %s", RECIPIENT_EMAIL)
-    except Exception as e:
-        logger.error("Failed to send email: %s", e)
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("👋 Hello! Please enter your **First Name**:")
-    return NAME
-
-async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['name'] = update.message.text.strip()
-    await update.message.reply_text("Thank you! Now enter your **Surname**:")
-    return SURNAME
-
-async def get_surname(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['surname'] = update.message.text.strip()
-    await update.message.reply_text("Got it. Next, enter your **Email Address**:")
-    return EMAIL
-
-async def get_email(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['email'] = update.message.text.strip()
-    await update.message.reply_text("Perfect. Finally, enter your **Phone Number**:")
-    return PHONE
-
-async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    context.user_data['phone'] = update.message.text.strip()
-    user_data = context.user_data
-    
-    # Run SMTP dispatch in thread pool to avoid blocking bot loop
-    await asyncio.to_thread(send_notification_email, user_data)
-    
-    summary = (
-        "✅ **Details Submitted!**\\n\\n"
-        f"Name - {user_data.get('name')}\\n"
-        f"Surname - {user_data.get('surname')}\\n"
-        f"Email - {user_data.get('email')}\\n"
-        f"Number - {user_data.get('phone')}\\n\\n"
-        "Your details have been e-mailed to koryunkvk@gmail.com!"
-    )
-    await update.message.reply_text(summary, parse_mode='Markdown')
-    return ConversationHandler.END
-
-async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("Operation cancelled. Send /start to begin again.")
-    return ConversationHandler.END
-
-def main():
-    app = Application.builder().token(BOT_TOKEN).build()
-
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
-        states={
-            NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_name)],
-            SURNAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_surname)],
-            EMAIL: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_email)],
-            PHONE: [MessageHandler(filters.TEXT & ~filters.COMMAND, get_phone)],
-        },
-        fallbacks=[CommandHandler('cancel', cancel)],
-    )
-
-    app.add_handler(conv_handler)
-    print("🤖 Bot started successfully! Press Ctrl+C to stop.")
-    app.run_polling()
-
-if __name__ == "__main__":
-    main()`;
-                generatedDepCode = `python-telegram-bot>=20.0\npython-dotenv>=1.0.0`;
-            } else {
-                generatedMainCode = `const { Telegraf, Scenes, session } = require('telegraf');
-const nodemailer = require('nodemailer');
-
-const BOT_TOKEN = "${botToken}";
-const RECIPIENT_EMAIL = "koryunkvk@gmail.com";
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'your_email@gmail.com',
-        pass: 'your_app_password'
-    }
-});
-
-const contactWizard = new Scenes.WizardScene(
-    'contact-wizard',
-    async (ctx) => {
-        await ctx.reply("👋 Hello! Please enter your First Name:");
-        return ctx.wizard.next();
-    },
-    async (ctx) => {
-        ctx.wizard.state.name = ctx.message.text.trim();
-        await ctx.reply("Thank you! Now enter your Surname:");
-        return ctx.wizard.next();
-    },
-    async (ctx) => {
-        ctx.wizard.state.surname = ctx.message.text.trim();
-        await ctx.reply("Got it. Next, enter your Email Address:");
-        return ctx.wizard.next();
-    },
-    async (ctx) => {
-        ctx.wizard.state.email = ctx.message.text.trim();
-        await ctx.reply("Perfect. Finally, enter your Phone Number:");
-        return ctx.wizard.next();
-    },
-    async (ctx) => {
-        ctx.wizard.state.phone = ctx.message.text.trim();
-        const data = ctx.wizard.state;
-
-        const body = \`Name - \${data.name}\\nSurname - \${data.surname}\\nEmail - \${data.email}\\nNumber - \${data.phone}\`;
-
-        try {
-            await transporter.sendMail({
-                from: 'your_email@gmail.com',
-                to: RECIPIENT_EMAIL,
-                subject: \`New Contact Details: \${data.name} \${data.surname}\`,
-                text: body
-            });
-            await ctx.reply("✅ Your details have been emailed to koryunkvk@gmail.com!\\n\\n" + body);
-        } catch (e) {
-            console.error("Email error:", e);
-            await ctx.reply("⚠️ Details received, but email failed to dispatch.");
-        }
-        return ctx.scene.leave();
-    }
-);
-
-const bot = new Telegraf(BOT_TOKEN);
-const stage = new Scenes.Stage([contactWizard]);
-
-bot.use(session());
-bot.use(stage.middleware());
-bot.command('start', (ctx) => ctx.scene.enter('contact-wizard'));
-
-bot.launch().then(() => console.log('🤖 Telegraf Bot running...'));
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));`;
-                generatedDepCode = `{\n  "name": "telegram-contact-bot",\n  "version": "1.0.0",\n  "main": "bot.js",\n  "dependencies": {\n    "telegraf": "^4.12.0",\n    "nodemailer": "^6.9.0"\n  }\n}`;
-            }
         }
 
         function updateDisplay() {
@@ -825,37 +654,12 @@ process.once('SIGTERM', () => bot.stop('SIGTERM'));`;
 
         function processSimResponse(input) {
             if (input === '/start') {
-                simStep = 'name';
-                addSimBubble("👋 Welcome! Please enter your First Name:", 'bot');
+                simStep = 'active';
+                addSimBubble("👋 Bot started! Enter commands or details specified in your logic.", 'bot');
                 return;
             }
 
-            switch(simStep) {
-                case 'name':
-                    simUserData.name = input;
-                    simStep = 'surname';
-                    addSimBubble("Thank you! Now enter your Surname:", 'bot');
-                    break;
-                case 'surname':
-                    simUserData.surname = input;
-                    simStep = 'email';
-                    addSimBubble("Got it. Next, enter your Email Address:", 'bot');
-                    break;
-                case 'email':
-                    simUserData.email = input;
-                    simStep = 'phone';
-                    addSimBubble("Perfect. Finally, enter your Phone Number:", 'bot');
-                    break;
-                case 'phone':
-                    simUserData.phone = input;
-                    simStep = 'done';
-                    const summary = `✅ Contact Details Saved!\n\nName - ${simUserData.name}\nSurname - ${simUserData.surname}\nEmail - ${simUserData.email}\nNumber - ${simUserData.phone}\n\n[Emailed to koryunkvk@gmail.com]`;
-                    addSimBubble(summary, 'bot');
-                    break;
-                default:
-                    addSimBubble("Send /start to begin a new form submission.", 'bot');
-                    break;
-            }
+            addSimBubble("Bot received: " + input, 'bot');
         }
 
         function escapeHtml(str) {
